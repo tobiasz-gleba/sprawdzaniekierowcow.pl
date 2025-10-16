@@ -29,6 +29,7 @@
 		"@tailwindcss/typography": "^0.5.18",
 		"@tailwindcss/vite": "^4.1.13",
 		"@types/node": "^22",
+		"daisyui": "^5.3.5",
 		"drizzle-kit": "^0.31.4",
 		"drizzle-orm": "^0.44.5",
 		"eslint": "^9.36.0",
