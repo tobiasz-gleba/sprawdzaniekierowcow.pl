@@ -1,12 +1,12 @@
 {
-  "version": "7",
+  "version": "5",
   "dialect": "mysql",
   "entries": [
     {
       "idx": 0,
       "version": "5",
-      "when": 1760617227765,
-      "tag": "0000_useful_lord_hawal",
+      "when": 1760649740750,
+      "tag": "0000_polite_star_brand",
       "breakpoints": true
     }
   ]
