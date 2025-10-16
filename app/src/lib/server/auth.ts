@@ -100,3 +100,24 @@ export async function createEmailVerificationToken(userId: string): Promise<stri
 	await db.insert(table.emailVerificationToken).values(tokenEntry);
 	return token;
 }
+
+export function generatePasswordResetToken(): string {
+	const bytes = crypto.getRandomValues(new Uint8Array(32));
+	const token = encodeBase64url(bytes);
+	return token;
+}
+
+export async function createPasswordResetToken(userId: string): Promise<string> {
+	// Delete any existing password reset tokens for this user
+	await db.delete(table.passwordResetToken).where(eq(table.passwordResetToken.userId, userId));
+	
+	const token = generatePasswordResetToken();
+	const tokenEntry: table.PasswordResetToken = {
+		id: token,
+		userId,
+		expiresAt: new Date(Date.now() + DAY_IN_MS) // 24 hours
+	};
+	
+	await db.insert(table.passwordResetToken).values(tokenEntry);
+	return token;
+}

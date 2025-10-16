@@ -1,8 +1,11 @@
 <script lang='ts'>
 	import { enhance } from '$app/forms';
+	import { page } from '$app/stores';
 	import type { ActionData } from './$types';
 
 	let { form }: { form: ActionData } = $props();
+	
+	const resetSuccess = $page.url.searchParams.get('reset') === 'success';
 </script>
 
 <div class="hero min-h-screen bg-base-200">
@@ -15,6 +18,22 @@
 		</div>
 		<div class="card bg-base-100 w-full max-w-sm shrink-0 shadow-2xl">
 			<form class="card-body" method="post" action="?/login" use:enhance>
+				{#if resetSuccess}
+					<div role="alert" class="alert alert-success">
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							class="h-6 w-6 shrink-0 stroke-current"
+							fill="none"
+							viewBox="0 0 24 24">
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+						</svg>
+						<span>Hasło zostało pomyślnie zresetowane! Możesz się teraz zalogować.</span>
+					</div>
+				{/if}
 				{#if form?.message}
 					<div role="alert" class={form.success ? "alert alert-success" : "alert alert-error"}>
 						{#if form.success}
@@ -70,6 +89,11 @@
 						class="input input-bordered"
 						required
 					/>
+					<div class="label">
+						<a href="/forgot-password" class="label-text-alt link link-hover">
+							Zapomniałeś hasła?
+						</a>
+					</div>
 				</div>
 				<div class="form-control mt-6 gap-2">
 					<button class="btn btn-primary">Zaloguj się</button>

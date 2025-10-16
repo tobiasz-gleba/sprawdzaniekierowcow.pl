@@ -109,7 +109,35 @@ npm run build
 
 You can preview the production build with `npm run preview`.
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+## Docker Deployment
+
+This project includes Docker support for production deployments. The application uses `@sveltejs/adapter-node` for Node.js runtime in Docker containers.
+
+### Quick Start with Docker
+
+1. **Install the Node.js adapter** (if not already installed):
+   ```sh
+   npm install
+   ```
+
+2. **Build and run with Docker Compose:**
+   ```sh
+   docker-compose -f docker-compose.prod.yml up -d
+   ```
+
+3. **Access the application:**
+   
+   Open your browser at `http://localhost:3000`
+
+### Files Included
+
+- `Dockerfile` - Multi-stage production build
+- `docker-compose.prod.yml` - Complete production setup with MySQL
+- `.dockerignore` - Optimizes Docker build context
+- `.env.example` - Template for environment variables
+- `DEPLOYMENT.md` - Comprehensive deployment guide
+
+For detailed deployment instructions, see [DEPLOYMENT.md](./DEPLOYMENT.md).
 
 ## Database Schema
 
