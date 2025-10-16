@@ -5,6 +5,7 @@
 	import AddDriverForm from '$lib/components/AddDriverForm.svelte';
 	import DriverList from '$lib/components/DriverList.svelte';
 	import DriverStats from '$lib/components/DriverStats.svelte';
+	import ImportDriversForm from '$lib/components/ImportDriversForm.svelte';
 
 	let { data, form }: { data: PageServerData; form: ActionData } = $props();
 	
@@ -42,6 +43,7 @@
 		<div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
 			<div class="xl:col-span-1 space-y-6">
 				<AddDriverForm {form} editDriver={editingDriver} onCancel={handleCancelEdit} />
+				<ImportDriversForm {form} />
 				<DriverStats drivers={data.drivers} />
 			</div>
 			<div class="xl:col-span-2">

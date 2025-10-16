@@ -153,6 +153,77 @@ export const actions: Actions = {
 			return fail(500, { message: 'Failed to delete driver' });
 		}
 	},
+	importDrivers: async (event) => {
+		if (!event.locals.user) {
+			return fail(401, { importError: true, importMessage: 'Unauthorized' });
+		}
+
+		const formData = await event.request.formData();
+		const csvFile = formData.get('csvFile');
+
+		if (!csvFile || !(csvFile instanceof File)) {
+			return fail(400, { importError: true, importMessage: 'No file uploaded' });
+		}
+
+		if (csvFile.type !== 'text/csv' && !csvFile.name.endsWith('.csv')) {
+			return fail(400, { importError: true, importMessage: 'File must be a CSV' });
+		}
+
+		try {
+			const text = await csvFile.text();
+			const lines = text.split('\n').filter(line => line.trim());
+			
+			if (lines.length < 2) {
+				return fail(400, { importError: true, importMessage: 'CSV file is empty or invalid' });
+			}
+
+			// Skip header row
+			const dataLines = lines.slice(1);
+			let successCount = 0;
+			let errorCount = 0;
+
+			for (const line of dataLines) {
+				// Parse CSV line (simple implementation)
+				const values = line.split(',').map(v => v.trim().replace(/^["']|["']$/g, ''));
+				
+				if (values.length < 3) {
+					errorCount++;
+					continue;
+				}
+
+				const [name, surname, documentSerialNumber] = values;
+
+				if (!name || !surname || !documentSerialNumber) {
+					errorCount++;
+					continue;
+				}
+
+				try {
+					const isValid = await validateLicense(documentSerialNumber);
+					
+					await db.insert(table.driver).values({
+						name: name.trim(),
+						surname: surname.trim(),
+						documentSerialNumber: documentSerialNumber.trim(),
+						status: isValid ? 1 : 0,
+						userId: event.locals.user.id,
+						createdAt: new Date()
+					});
+					
+					successCount++;
+				} catch (error) {
+					errorCount++;
+				}
+			}
+
+			return {
+				importSuccess: true,
+				importMessage: `Successfully imported ${successCount} driver(s)${errorCount > 0 ? `, ${errorCount} failed` : ''}`
+			};
+		} catch (error) {
+			return fail(500, { importError: true, importMessage: 'Failed to process CSV file' });
+		}
+	},
 	logout: async (event) => {
 		if (!event.locals.session) {
 			return fail(401);

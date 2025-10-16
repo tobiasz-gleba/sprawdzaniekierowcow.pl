@@ -1,17 +1,76 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import type { Driver } from '$lib/server/db/schema';
+	import CryptoJS from 'crypto-js';
 
 	let { drivers, onEdit }: { drivers: Driver[]; onEdit: (driver: Driver) => void } = $props();
 	
 	function confirmDelete(driver: Driver) {
 		return confirm(`Are you sure you want to delete driver ${driver.name} ${driver.surname} (Document: ${driver.documentSerialNumber})?\n\nThis action cannot be undone.`);
 	}
+	
+	function handleCheckDriver(driver: Driver, e: MouseEvent) {
+		e.preventDefault();
+		// Generate hash for verification
+		const hash = CryptoJS.SHA256(driver.documentSerialNumber).toString();
+		// Open government verification page with the document serial number
+		const url = `https://info-car.pl/sprawdz-historie-pojazdu?doc=${encodeURIComponent(driver.documentSerialNumber)}`;
+		window.open(url, '_blank');
+	}
+	
+	function exportToCSV() {
+		if (drivers.length === 0) {
+			alert('No drivers to export');
+			return;
+		}
+		
+		// Create CSV header
+		const headers = ['Name', 'Surname', 'Document Serial Number', 'Status'];
+		const csvRows = [headers.join(',')];
+		
+		// Add driver data
+		drivers.forEach(driver => {
+			const row = [
+				driver.name,
+				driver.surname,
+				driver.documentSerialNumber,
+				driver.status ? 'Valid' : 'Invalid'
+			];
+			// Escape fields that might contain commas
+			const escapedRow = row.map(field => `"${field}"`);
+			csvRows.push(escapedRow.join(','));
+		});
+		
+		// Create blob and download
+		const csvContent = csvRows.join('\n');
+		const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+		const link = document.createElement('a');
+		const url = URL.createObjectURL(blob);
+		
+		link.setAttribute('href', url);
+		link.setAttribute('download', `drivers_${new Date().toISOString().split('T')[0]}.csv`);
+		link.style.visibility = 'hidden';
+		
+		document.body.appendChild(link);
+		link.click();
+		document.body.removeChild(link);
+	}
 </script>
 
 <div class="card bg-base-100 shadow-xl h-full">
 	<div class="card-body">
-		<h2 class="card-title mb-4">Driver Report</h2>
+		<div class="flex justify-between items-center mb-4">
+			<h2 class="card-title">Drivers Report</h2>
+			{#if drivers.length > 0}
+				<button
+					type="button"
+					class="btn btn-primary btn-sm"
+					onclick={exportToCSV}
+					aria-label="Export to CSV">
+					📥 Export CSV
+				</button>
+			{/if}
+		</div>
 		{#if drivers.length === 0}
 			<div class="alert alert-info">
 				<svg
@@ -52,6 +111,13 @@
 								</td>
 								<td>
 									<div class="flex gap-1">
+										<button
+											type="button"
+											class="btn btn-ghost btn-sm"
+											onclick={(e) => handleCheckDriver(driver, e)}
+											aria-label="Check driver license">
+											🔗
+										</button>
 										<button
 											type="button"
 											class="btn btn-ghost btn-sm"
