@@ -17,7 +17,10 @@ RUN npm install --production=false
 COPY . .
 
 # Set dummy environment variables for build
-ENV DATABASE_URL=mysql://dummy:dummy@localhost:3306/dummy \
+ENV DB_HOST=localhost \
+    DB_NAME=dummy \
+    DB_USERNAME=dummy \
+    DB_PASSWORD=dummy \
     EMAIL_USER=build@example.com \
     EMAIL_PASS=dummy \
     SMTP_HOST=localhost \

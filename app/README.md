@@ -38,10 +38,13 @@ This will start a MySQL database container on port 3306 with the following crede
 
 ### Environment Variables
 
-Create a `.env` file in the project root with your database connection string:
+Create a `.env` file in the project root with your database connection details:
 
 ```env
-DATABASE_URL="mysql://root:mysecretpassword@localhost:3306/local"
+DB_HOST=localhost
+DB_NAME=local
+DB_USERNAME=root
+DB_PASSWORD=mysecretpassword
 ```
 
 ### Database Migrations

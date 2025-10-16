@@ -7,7 +7,10 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=mysql://root:mysecretpassword@db:3306/local
+      - DB_HOST=db
+      - DB_NAME=local
+      - DB_USERNAME=root
+      - DB_PASSWORD=mysecretpassword
       - PORT=3000
       - HOST=0.0.0.0
       # Email Configuration - REPLACE WITH YOUR ACTUAL VALUES

@@ -1,4 +1,6 @@
-# sprawdzaniekierowcow.pl 🚗
+# sprawdzaniekierowcow.pl
+
+
 
 <div align="center">
 
@@ -7,15 +9,11 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
 ![MySQL](https://img.shields.io/badge/MySQL-4479A1?logo=mysql&logoColor=white)
 
-**Darmowe monitorowanie uprawnień kierowców** | Free Driver License Monitoring
-
-[🇵🇱 Polski](#polska-wersja) | [🇬🇧 English](#english-version)
-
-</div>
+</dev>
 
 ---
 
-## 🇵🇱 Polska Wersja
+![Screenshot](app/static/Screenshot.png)
 
 ### O Projekcie
 
@@ -76,7 +74,10 @@ CREATE DATABASE sprawdzaniekierowcow;
 
 Utwórz plik `.env` w katalogu `app/`:
 ```env
-DATABASE_URL=mysql://user:password@localhost:3306/sprawdzaniekierowcow
+DB_HOST=localhost
+DB_NAME=sprawdzaniekierowcow
+DB_USERNAME=root
+DB_PASSWORD=your-password
 SMTP_HOST=smtp.example.com
 SMTP_PORT=587
 SMTP_USER=your-email@example.com
