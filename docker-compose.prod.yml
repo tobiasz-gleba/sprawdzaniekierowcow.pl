@@ -1,10 +1,34 @@
 services:
+  # Database migration init container
+  db-migrate:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=db
+      - DB_NAME=local
+      - DB_USERNAME=root
+      - DB_PASSWORD=mysecretpassword
+      # Dummy email config for init container
+      - EMAIL_USER=init@example.com
+      - EMAIL_PASS=dummy
+      - SMTP_HOST=localhost
+      - SMTP_PORT=587
+    command: ["npm", "run", "db:migrate"]
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app-network
+    restart: "no"
+
   app:
     build:
-      context: .
+      context: ./app
       dockerfile: Dockerfile
     ports:
-      - '3000:3000'
+      - '3001:3000'
     environment:
       - NODE_ENV=production
       - DB_HOST=db
@@ -19,10 +43,12 @@ services:
       - SMTP_HOST=smtp.gmail.com
       - SMTP_PORT=587
       # Public URL for email links
-      - PUBLIC_BASE_URL=http://localhost:3000
+      - PUBLIC_BASE_URL=http://localhost:3001
     depends_on:
       db:
         condition: service_healthy
+      db-migrate:
+        condition: service_completed_successfully
     restart: unless-stopped
     networks:
       - app-network
@@ -30,8 +56,9 @@ services:
   db:
     image: mysql:8.0
     restart: unless-stopped
-    ports:
-      - '3306:3306'
+    # Ports commented out to avoid conflicts - app connects via internal network
+    # ports:
+    #   - '3306:3306'
     environment:
       MYSQL_ROOT_PASSWORD: mysecretpassword
       MYSQL_DATABASE: local
@@ -52,3 +79,4 @@ volumes:
 networks:
   app-network:
     driver: bridge
+

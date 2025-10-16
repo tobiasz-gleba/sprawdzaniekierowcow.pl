@@ -93,10 +93,63 @@ Aplikacja będzie dostępna pod adresem `http://localhost:5173`
 
 ### Budowanie dla produkcji
 
+#### Lokalne buildy
+
 ```bash
 npm run build
 npm run preview
 ```
+
+#### Docker Compose (produkcja)
+
+Aplikacja zawiera pełną konfigurację Docker Compose dla środowiska produkcyjnego z automatycznymi migracjami bazy danych.
+
+**Uruchomienie:**
+
+```bash
+# Z katalogu głównego repozytorium
+docker compose -f docker-compose.prod.yml up -d
+```
+
+**Co się dzieje przy starcie:**
+1. Uruchamia się kontener MySQL
+2. Init container automatycznie wykonuje migracje bazy danych (`db-migrate`)
+3. Po pomyślnym zakończeniu migracji uruchamia się główna aplikacja
+4. Aplikacja dostępna na `http://localhost:3001`
+
+**Zatrzymanie:**
+```bash
+docker compose -f docker-compose.prod.yml down
+```
+
+**Zatrzymanie z usunięciem danych:**
+```bash
+docker compose -f docker-compose.prod.yml down -v
+```
+
+**Przeglądanie logów:**
+```bash
+# Wszystkie serwisy
+docker compose -f docker-compose.prod.yml logs -f
+
+# Tylko aplikacja
+docker compose -f docker-compose.prod.yml logs -f app
+
+# Tylko migracje
+docker compose -f docker-compose.prod.yml logs db-migrate
+```
+
+**Ważne:** Przed uruchomieniem edytuj `docker-compose.prod.yml` i zmień:
+- `EMAIL_USER` - twój adres email SMTP
+- `EMAIL_PASS` - hasło do konta email
+- `SMTP_HOST` - serwer SMTP (domyślnie Gmail)
+- `DB_PASSWORD` - hasło do bazy danych (zmień także w sekcji `db`)
+- `PUBLIC_BASE_URL` - URL aplikacji (dla linków w emailach)
+
+**Uwagi:**
+- Aplikacja domyślnie działa na porcie 3001 (możesz zmienić w sekcji `app.ports`)
+- Baza danych MySQL nie jest wystawiana na zewnątrz - aplikacja łączy się przez wewnętrzną sieć Docker
+- Jeśli port 3001 jest zajęty, zmień mapowanie w `docker-compose.prod.yml` (np. `3002:3000`)
 
 ### Dostępne komendy
 
