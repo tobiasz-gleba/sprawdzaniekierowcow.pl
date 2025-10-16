@@ -109,13 +109,13 @@ export const actions: Actions = {
 			await db
 				.delete(table.passwordResetToken)
 				.where(eq(table.passwordResetToken.id, token));
-
-			// Redirect to login with success message
-			return redirect(302, '/login?reset=success');
 		} catch (error) {
 			console.error('Password reset error:', error);
 			return fail(500, { message: 'Wystąpił błąd podczas resetowania hasła' });
 		}
+
+		// Redirect to login with success message (outside try/catch)
+		redirect(302, '/login?reset=success');
 	}
 };
 

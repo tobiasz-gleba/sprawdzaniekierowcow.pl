@@ -1,20 +1,26 @@
 import nodemailer from 'nodemailer';
 import type { Transporter } from 'nodemailer';
+import { EMAIL_USER, EMAIL_PASS, SMTP_HOST, SMTP_PORT } from '$env/static/private';
 
 // Load SMTP configuration from environment variables
-const EMAIL_USER = process.env.EMAIL_USER;
-const EMAIL_PASS = process.env.EMAIL_PASS;
-const SMTP_HOST = process.env.SMTP_HOST;
-const SMTP_PORT = parseInt(process.env.SMTP_PORT || '587', 10);
+function getEmailConfig() {
+	if (!EMAIL_USER || !EMAIL_PASS || !SMTP_HOST) {
+		throw new Error('Missing required SMTP environment variables: EMAIL_USER, EMAIL_PASS, SMTP_HOST');
+	}
 
-if (!EMAIL_USER || !EMAIL_PASS || !SMTP_HOST) {
-	throw new Error('Missing required SMTP environment variables: EMAIL_USER, EMAIL_PASS, SMTP_HOST');
+	return { 
+		EMAIL_USER, 
+		EMAIL_PASS, 
+		SMTP_HOST, 
+		SMTP_PORT: parseInt(SMTP_PORT || '587', 10) 
+	};
 }
 
-let transporter: Transporter;
+let transporter: Transporter | null = null;
 
 function getTransporter() {
 	if (!transporter) {
+		const { EMAIL_USER, EMAIL_PASS, SMTP_HOST, SMTP_PORT } = getEmailConfig();
 		transporter = nodemailer.createTransport({
 			host: SMTP_HOST,
 			port: SMTP_PORT,
@@ -29,6 +35,7 @@ function getTransporter() {
 }
 
 export async function sendVerificationEmail(email: string, token: string) {
+	const { EMAIL_USER } = getEmailConfig();
 	const verificationUrl = `${getBaseUrl()}/verify-email?token=${token}`;
 	
 	const mailOptions = {
@@ -79,6 +86,7 @@ Jeśli nie zakładałeś konta w naszym serwisie, zignoruj tę wiadomość.
 }
 
 export async function sendPasswordResetEmail(email: string, token: string) {
+	const { EMAIL_USER } = getEmailConfig();
 	const resetUrl = `${getBaseUrl()}/reset-password?token=${token}`;
 	
 	const mailOptions = {
@@ -90,12 +98,6 @@ export async function sendPasswordResetEmail(email: string, token: string) {
 			<html>
 			<head>
 				<meta charset="utf-8">
-				<style>
-					body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-					.container { max-width: 600px; margin: 0 auto; padding: 20px; }
-					.button { display: inline-block; padding: 12px 24px; background-color: #4F46E5; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
-					.footer { margin-top: 30px; font-size: 12px; color: #666; }
-				</style>
 			</head>
 			<body>
 				<div class="container">
@@ -138,7 +140,7 @@ Jeśli nie prosiłeś o zresetowanie hasła, zignoruj tę wiadomość. Twoje has
 }
 
 function getBaseUrl(): string {
-	// Priority: environment variable, then production URL, then default
-	return process.env.PUBLIC_BASE_URL || process.env.ORIGIN || 'http://localhost:5173';
+	// Use environment variable for base URL
+	return process.env.PUBLIC_BASE_URL || 'http://localhost:5173';
 }
 

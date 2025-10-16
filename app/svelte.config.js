@@ -1,4 +1,4 @@
-import adapter from '@sveltejs/adapter-node';
+import adapter from '@sveltejs/adapter-auto';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
 /** @type {import('@sveltejs/kit').Config} */
@@ -8,11 +8,9 @@ const config = {
 	preprocess: vitePreprocess(),
 
 	kit: {
-		// adapter-node is required for Docker deployments
-		// adapter-auto won't work reliably in containerized environments
-		adapter: adapter({
-			out: 'build'
-		})
+		// adapter-auto automatically picks the right adapter for your deployment
+		// See https://svelte.dev/docs/kit/adapters for more information about adapters.
+		adapter: adapter()
 	}
 };
 

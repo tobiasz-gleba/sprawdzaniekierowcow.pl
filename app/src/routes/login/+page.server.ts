@@ -91,22 +91,12 @@ export const actions: Actions = {
 
 			// Create verification token and send email
 			const verificationToken = await auth.createEmailVerificationToken(userId);
+			await sendVerificationEmail(email, verificationToken);
 			
-			try {
-				await sendVerificationEmail(email, verificationToken);
-				return {
-					success: true,
-					message: 'Konto zostało utworzone! Sprawdź swoją skrzynkę email i potwierdź adres, aby się zalogować.'
-				};
-			} catch (emailError) {
-				console.error('Email sending error:', emailError);
-				// User created but email failed - show verification link directly
-				const baseUrl = 'http://localhost:5173';
-				return {
-					success: true,
-					message: `Konto utworzone! Email nie mógł być wysłany. Link weryfikacyjny: ${baseUrl}/verify-email?token=${verificationToken}`
-				};
-			}
+			return {
+				success: true,
+				message: 'Konto zostało utworzone! Sprawdź swoją skrzynkę email i potwierdź adres, aby się zalogować.'
+			};
 		} catch (error) {
 			console.error('Registration error:', error);
 			return fail(500, { message: 'An error has occurred' });
