@@ -19,7 +19,7 @@ Informacje o uprawnieniach kierowców są publicznie dostępne w polskich rejest
 - Monitoring ważności dokumentów
 - Otrzymywanie powiadomień o zmianach statusu (odebranie, wygaśnięcie uprawnień)
 
-Projekt został udostępniony jako open source z kilku kluczowych powodów:
+Projekt został udostępniony jako open source.
 
 ### Funkcje
 

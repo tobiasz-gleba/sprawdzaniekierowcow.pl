@@ -41,11 +41,21 @@ WORKDIR /app
 # Install dumb-init to handle signals properly
 RUN apk add --no-cache dumb-init
 
+# Copy package.json first for dependency installation
+COPY --from=builder /app/package.json ./package.json
+
+# Install production dependencies and drizzle-kit for migrations
+RUN npm install --production && \
+    npm install drizzle-kit tsx --save-prod
+
 # Copy built application from builder
 COPY --from=builder /app/build ./build
 COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/drizzle ./drizzle
+
+# Copy drizzle config and schema for migrations
+COPY --from=builder /app/drizzle.config.ts ./drizzle.config.ts
+COPY --from=builder /app/src/lib/server/db ./src/lib/server/db
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && \
