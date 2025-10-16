@@ -7,10 +7,16 @@ on:
       - main
     tags:
       - 'v*.*.*'
+    paths-ignore:
+      - 'kubernetes/**'
+      - '*.md'
   pull_request:
     branches:
       - master
       - main
+    paths-ignore:
+      - 'kubernetes/**'
+      - '*.md'
 
 env:
   REGISTRY: ghcr.io

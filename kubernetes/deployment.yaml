@@ -78,7 +78,7 @@ spec:
         - name: SMTP_HOST
           value: smtp.iq.pl
         - name: SMTP_PORT
-          value: 587
+          value: "587"
         resources:
           limits:
             memory: "1024Mi"
