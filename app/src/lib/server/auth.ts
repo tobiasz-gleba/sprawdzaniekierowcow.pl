@@ -88,15 +88,17 @@ export function generateEmailVerificationToken(): string {
 
 export async function createEmailVerificationToken(userId: string): Promise<string> {
 	// Delete any existing tokens for this user
-	await db.delete(table.emailVerificationToken).where(eq(table.emailVerificationToken.userId, userId));
-	
+	await db
+		.delete(table.emailVerificationToken)
+		.where(eq(table.emailVerificationToken.userId, userId));
+
 	const token = generateEmailVerificationToken();
 	const tokenEntry: table.EmailVerificationToken = {
 		id: token,
 		userId,
 		expiresAt: new Date(Date.now() + DAY_IN_MS) // 24 hours
 	};
-	
+
 	await db.insert(table.emailVerificationToken).values(tokenEntry);
 	return token;
 }
@@ -110,14 +112,14 @@ export function generatePasswordResetToken(): string {
 export async function createPasswordResetToken(userId: string): Promise<string> {
 	// Delete any existing password reset tokens for this user
 	await db.delete(table.passwordResetToken).where(eq(table.passwordResetToken.userId, userId));
-	
+
 	const token = generatePasswordResetToken();
 	const tokenEntry: table.PasswordResetToken = {
 		id: token,
 		userId,
 		expiresAt: new Date(Date.now() + DAY_IN_MS) // 24 hours
 	};
-	
+
 	await db.insert(table.passwordResetToken).values(tokenEntry);
 	return token;
 }

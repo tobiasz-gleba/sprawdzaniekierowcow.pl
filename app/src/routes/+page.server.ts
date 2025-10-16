@@ -15,19 +15,19 @@ async function validateLicense(documentSerialNumber: string): Promise<boolean> {
 
 export const load: PageServerLoad = async (event) => {
 	const user = event.locals.user;
-	
+
 	// If not logged in, return null user and empty drivers array
 	if (!user) {
 		return { user: null, drivers: [] };
 	}
-	
+
 	// Fetch all drivers for the current user
 	const drivers = await db
 		.select()
 		.from(table.driver)
 		.where(eq(table.driver.userId, user.id))
 		.orderBy(desc(table.driver.createdAt));
-	
+
 	return { user, drivers };
 };
 
@@ -60,7 +60,7 @@ export const actions: Actions = {
 		try {
 			// Validate the license
 			const isValid = await validateLicense(documentSerialNumber.trim());
-			
+
 			await db.insert(table.driver).values({
 				name: name.trim(),
 				surname: surname.trim(),
@@ -176,8 +176,8 @@ export const actions: Actions = {
 
 		try {
 			const text = await csvFile.text();
-			const lines = text.split('\n').filter(line => line.trim());
-			
+			const lines = text.split('\n').filter((line) => line.trim());
+
 			if (lines.length < 2) {
 				return fail(400, { importError: true, importMessage: 'CSV file is empty or invalid' });
 			}
@@ -189,8 +189,8 @@ export const actions: Actions = {
 
 			for (const line of dataLines) {
 				// Parse CSV line (simple implementation)
-				const values = line.split(',').map(v => v.trim().replace(/^["']|["']$/g, ''));
-				
+				const values = line.split(',').map((v) => v.trim().replace(/^["']|["']$/g, ''));
+
 				if (values.length < 3) {
 					errorCount++;
 					continue;
@@ -205,7 +205,7 @@ export const actions: Actions = {
 
 				try {
 					const isValid = await validateLicense(documentSerialNumber);
-					
+
 					await db.insert(table.driver).values({
 						name: name.trim(),
 						surname: surname.trim(),
@@ -214,7 +214,7 @@ export const actions: Actions = {
 						userId: event.locals.user.id,
 						createdAt: new Date()
 					});
-					
+
 					successCount++;
 				} catch (error) {
 					errorCount++;

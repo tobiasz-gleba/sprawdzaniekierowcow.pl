@@ -5,14 +5,16 @@ import { EMAIL_USER, EMAIL_PASS, SMTP_HOST, SMTP_PORT } from '$env/static/privat
 // Load SMTP configuration from environment variables
 function getEmailConfig() {
 	if (!EMAIL_USER || !EMAIL_PASS || !SMTP_HOST) {
-		throw new Error('Missing required SMTP environment variables: EMAIL_USER, EMAIL_PASS, SMTP_HOST');
+		throw new Error(
+			'Missing required SMTP environment variables: EMAIL_USER, EMAIL_PASS, SMTP_HOST'
+		);
 	}
 
-	return { 
-		EMAIL_USER, 
-		EMAIL_PASS, 
-		SMTP_HOST, 
-		SMTP_PORT: parseInt(SMTP_PORT || '587', 10) 
+	return {
+		EMAIL_USER,
+		EMAIL_PASS,
+		SMTP_HOST,
+		SMTP_PORT: parseInt(SMTP_PORT || '587', 10)
 	};
 }
 
@@ -37,7 +39,7 @@ function getTransporter() {
 export async function sendVerificationEmail(email: string, token: string) {
 	const { EMAIL_USER } = getEmailConfig();
 	const verificationUrl = `${getBaseUrl()}/verify-email?token=${token}`;
-	
+
 	const mailOptions = {
 		from: `"Sprawdzanie Kierowców" <${EMAIL_USER}>`,
 		to: email,
@@ -88,7 +90,7 @@ Jeśli nie zakładałeś konta w naszym serwisie, zignoruj tę wiadomość.
 export async function sendPasswordResetEmail(email: string, token: string) {
 	const { EMAIL_USER } = getEmailConfig();
 	const resetUrl = `${getBaseUrl()}/reset-password?token=${token}`;
-	
+
 	const mailOptions = {
 		from: `"Sprawdzanie Kierowców" <${EMAIL_USER}>`,
 		to: email,
@@ -143,4 +145,3 @@ function getBaseUrl(): string {
 	// Use environment variable for base URL
 	return process.env.PUBLIC_BASE_URL || 'http://localhost:5173';
 }
-

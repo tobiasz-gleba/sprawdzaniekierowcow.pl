@@ -44,17 +44,18 @@
 		{#each notificationList as notification (notification.id)}
 			<div
 				class="alert {getAlertClass(notification.type)} shadow-lg"
-				transition:fly={{ x: 300, duration: 300 }}>
+				transition:fly={{ x: 300, duration: 300 }}
+			>
 				{@html getIcon(notification.type)}
 				<span>{notification.message}</span>
 				<button
-					class="btn btn-ghost btn-sm btn-circle"
+					class="btn btn-circle btn-ghost btn-sm"
 					onclick={() => notifications.remove(notification.id)}
-					aria-label="Close notification">
+					aria-label="Close notification"
+				>
 					✕
 				</button>
 			</div>
 		{/each}
 	</div>
 {/if}
-

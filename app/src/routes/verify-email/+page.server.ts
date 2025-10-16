@@ -48,9 +48,7 @@ export const load: PageServerLoad = async ({ url }) => {
 			.where(eq(table.user.id, verificationToken.userId));
 
 		// Delete the used token
-		await db
-			.delete(table.emailVerificationToken)
-			.where(eq(table.emailVerificationToken.id, token));
+		await db.delete(table.emailVerificationToken).where(eq(table.emailVerificationToken.id, token));
 
 		return {
 			success: true,
@@ -64,4 +62,3 @@ export const load: PageServerLoad = async ({ url }) => {
 		};
 	}
 };
-

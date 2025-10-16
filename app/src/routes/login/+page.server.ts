@@ -49,8 +49,8 @@ export const actions: Actions = {
 
 		// Check if email is verified
 		if (!existingUser.emailVerified) {
-			return fail(400, { 
-				message: 'Musisz najpierw potwierdzić swój adres email. Sprawdź swoją skrzynkę pocztową.' 
+			return fail(400, {
+				message: 'Musisz najpierw potwierdzić swój adres email. Sprawdź swoją skrzynkę pocztową.'
 			});
 		}
 
@@ -82,20 +82,21 @@ export const actions: Actions = {
 		});
 
 		try {
-			await db.insert(table.user).values({ 
-				id: userId, 
-				email, 
+			await db.insert(table.user).values({
+				id: userId,
+				email,
 				passwordHash,
-				emailVerified: false 
+				emailVerified: false
 			});
 
 			// Create verification token and send email
 			const verificationToken = await auth.createEmailVerificationToken(userId);
 			await sendVerificationEmail(email, verificationToken);
-			
+
 			return {
 				success: true,
-				message: 'Konto zostało utworzone! Sprawdź swoją skrzynkę email i potwierdź adres, aby się zalogować.'
+				message:
+					'Konto zostało utworzone! Sprawdź swoją skrzynkę email i potwierdź adres, aby się zalogować.'
 			};
 		} catch (error) {
 			console.error('Registration error:', error);

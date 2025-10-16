@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - '3000:3000'
     environment:
       - NODE_ENV=production
       - DB_HOST=db
@@ -31,7 +31,7 @@ services:
     image: mysql:8.0
     restart: unless-stopped
     ports:
-      - "3306:3306"
+      - '3306:3306'
     environment:
       MYSQL_ROOT_PASSWORD: mysecretpassword
       MYSQL_DATABASE: local
@@ -40,7 +40,7 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pmysecretpassword"]
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost', '-u', 'root', '-pmysecretpassword']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -52,4 +52,3 @@ volumes:
 networks:
   app-network:
     driver: bridge
-

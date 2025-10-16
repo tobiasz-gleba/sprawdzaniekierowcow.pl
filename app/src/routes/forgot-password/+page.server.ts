@@ -27,26 +27,26 @@ export const actions: Actions = {
 			// Find user by email
 			const [user] = await db.select().from(table.user).where(eq(table.user.email, email));
 
-		// Always return success to prevent email enumeration
-		if (!user) {
+			// Always return success to prevent email enumeration
+			if (!user) {
+				return {
+					success: true,
+					message:
+						'Jeśli konto z tym adresem email istnieje, zostanie wysłany link do resetowania hasła.'
+				};
+			}
+
+			// Create password reset token and send email
+			const resetToken = await auth.createPasswordResetToken(user.id);
+			await sendPasswordResetEmail(email, resetToken);
+
 			return {
 				success: true,
-				message: 'Jeśli konto z tym adresem email istnieje, zostanie wysłany link do resetowania hasła.'
+				message: 'Link do resetowania hasła został wysłany na Twój adres email.'
 			};
-		}
-
-		// Create password reset token and send email
-		const resetToken = await auth.createPasswordResetToken(user.id);
-		await sendPasswordResetEmail(email, resetToken);
-
-		return {
-			success: true,
-			message: 'Link do resetowania hasła został wysłany na Twój adres email.'
-		};
 		} catch (error) {
 			console.error('Password reset request error:', error);
 			return fail(500, { message: 'Wystąpił błąd podczas przetwarzania żądania' });
 		}
 	}
 };
-

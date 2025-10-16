@@ -1,15 +1,9 @@
 # sprawdzaniekierowcow.pl
 
-
-
-<div align="center">
-
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![SvelteKit](https://img.shields.io/badge/SvelteKit-FF3E00?logo=svelte&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
 ![MySQL](https://img.shields.io/badge/MySQL-4479A1?logo=mysql&logoColor=white)
-
-</dev>
 
 ---
 

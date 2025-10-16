@@ -31,9 +31,7 @@ export const load: PageServerLoad = async ({ url }) => {
 
 		if (Date.now() >= resetToken.expiresAt.getTime()) {
 			// Delete expired token
-			await db
-				.delete(table.passwordResetToken)
-				.where(eq(table.passwordResetToken.id, token));
+			await db.delete(table.passwordResetToken).where(eq(table.passwordResetToken.id, token));
 
 			return {
 				error: true,
@@ -85,9 +83,7 @@ export const actions: Actions = {
 			}
 
 			if (Date.now() >= resetToken.expiresAt.getTime()) {
-				await db
-					.delete(table.passwordResetToken)
-					.where(eq(table.passwordResetToken.id, token));
+				await db.delete(table.passwordResetToken).where(eq(table.passwordResetToken.id, token));
 				return fail(400, { message: 'Token resetowania hasła wygasł' });
 			}
 
@@ -100,15 +96,10 @@ export const actions: Actions = {
 			});
 
 			// Update user password
-			await db
-				.update(table.user)
-				.set({ passwordHash })
-				.where(eq(table.user.id, resetToken.userId));
+			await db.update(table.user).set({ passwordHash }).where(eq(table.user.id, resetToken.userId));
 
 			// Delete the used token
-			await db
-				.delete(table.passwordResetToken)
-				.where(eq(table.passwordResetToken.id, token));
+			await db.delete(table.passwordResetToken).where(eq(table.passwordResetToken.id, token));
 		} catch (error) {
 			console.error('Password reset error:', error);
 			return fail(500, { message: 'Wystąpił błąd podczas resetowania hasła' });
@@ -118,4 +109,3 @@ export const actions: Actions = {
 		redirect(302, '/login?reset=success');
 	}
 };
-

@@ -119,17 +119,19 @@ This project includes Docker support for production deployments. The application
 ### Quick Start with Docker
 
 1. **Install the Node.js adapter** (if not already installed):
+
    ```sh
    npm install
    ```
 
 2. **Build and run with Docker Compose:**
+
    ```sh
    docker-compose -f docker-compose.prod.yml up -d
    ```
 
 3. **Access the application:**
-   
+
    Open your browser at `http://localhost:3000`
 
 ### Files Included

@@ -31,7 +31,8 @@ export const actions: Actions = {
 				// Don't reveal if email exists or not for security
 				return {
 					success: true,
-					message: 'Jeśli konto z tym adresem email istnieje i nie jest zweryfikowane, zostanie wysłany email weryfikacyjny.'
+					message:
+						'Jeśli konto z tym adresem email istnieje i nie jest zweryfikowane, zostanie wysłany email weryfikacyjny.'
 				};
 			}
 
@@ -57,4 +58,3 @@ export const actions: Actions = {
 		}
 	}
 };
-

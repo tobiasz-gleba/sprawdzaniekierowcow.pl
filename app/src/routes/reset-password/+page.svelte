@@ -13,30 +13,32 @@
 		</div>
 
 		{#if data.error}
-			<div class="card bg-base-100 w-full max-w-sm shadow-2xl">
+			<div class="card w-full max-w-sm bg-base-100 shadow-2xl">
 				<div class="card-body">
 					<div role="alert" class="alert alert-error">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
 							class="h-6 w-6 shrink-0 stroke-current"
 							fill="none"
-							viewBox="0 0 24 24">
+							viewBox="0 0 24 24"
+						>
 							<path
 								stroke-linecap="round"
 								stroke-linejoin="round"
 								stroke-width="2"
-								d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+								d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+							/>
 						</svg>
 						<span>{data.message}</span>
 					</div>
-					<div class="card-actions justify-center mt-4">
+					<div class="mt-4 card-actions justify-center">
 						<a href="/forgot-password" class="btn btn-primary">Poproś o nowy link</a>
 						<a href="/login" class="btn btn-ghost">Wróć do logowania</a>
 					</div>
 				</div>
 			</div>
 		{:else}
-			<div class="card bg-base-100 w-full max-w-sm shadow-2xl">
+			<div class="card w-full max-w-sm bg-base-100 shadow-2xl">
 				<form class="card-body" method="post" use:enhance>
 					<input type="hidden" name="token" value={data.token} />
 
@@ -46,12 +48,14 @@
 								xmlns="http://www.w3.org/2000/svg"
 								class="h-6 w-6 shrink-0 stroke-current"
 								fill="none"
-								viewBox="0 0 24 24">
+								viewBox="0 0 24 24"
+							>
 								<path
 									stroke-linecap="round"
 									stroke-linejoin="round"
 									stroke-width="2"
-									d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+									d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+								/>
 							</svg>
 							<span>{form.message}</span>
 						</div>
@@ -66,7 +70,7 @@
 							type="password"
 							name="password"
 							placeholder="Wprowadź nowe hasło"
-							class="input input-bordered"
+							class="input-bordered input"
 							minlength="6"
 							required
 						/>
@@ -84,7 +88,7 @@
 							type="password"
 							name="confirmPassword"
 							placeholder="Potwierdź nowe hasło"
-							class="input input-bordered"
+							class="input-bordered input"
 							minlength="6"
 							required
 						/>
@@ -94,12 +98,11 @@
 						<button class="btn btn-primary">Zresetuj hasło</button>
 					</div>
 
-					<div class="text-center mt-4">
-						<a href="/login" class="link link-primary text-sm">Wróć do logowania</a>
+					<div class="mt-4 text-center">
+						<a href="/login" class="link text-sm link-primary">Wróć do logowania</a>
 					</div>
 				</form>
 			</div>
 		{/if}
 	</div>
 </div>
-
