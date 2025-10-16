@@ -1,11 +1,11 @@
 <section class="py-16 md:py-24">
   <div class="container mx-auto px-4 max-w-7xl">
     <!-- Image Container -->
-    <div class="mb-16 rounded-2xl overflow-hidden bg-neutral-800">
+    <div class="mb-16 flex justify-center">
       <img 
-        src="https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=1200&h=600&fit=crop" 
+        src="/Screenshot.png" 
         alt="Sprawdzanie uprawnień kierowców" 
-        class="w-full h-[400px] md:h-[500px] object-cover opacity-80 grayscale"
+        class="w-[100%] h-auto rounded-xl border-2 border-neutral-700 shadow-2xl"
       />
     </div>
 
