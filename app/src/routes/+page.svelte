@@ -6,6 +6,7 @@
 	import DriverList from '$lib/components/DriverList.svelte';
 	import DriverStats from '$lib/components/DriverStats.svelte';
 	import ImportDriversForm from '$lib/components/ImportDriversForm.svelte';
+	import AboutApp from '$lib/components/AboutApp.svelte';
 
 	let { data, form }: { data: PageServerData; form: ActionData } = $props();
 	
@@ -27,29 +28,38 @@
 	});
 </script>
 
-<div class="min-h-screen bg-base-200">
-	<div class="container mx-auto p-4 md:p-8 max-w-7xl">
-		<div class="space-y-6">
-			<div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-				<div>
-					<h1 class="text-4xl font-bold mb-2">Witaj, {data.user.email.split('@')[0]}!</h1>
-					<p class="text-base-content/70">Monitoruj uprawnienia kierowców</p>
+{#if !data.user}
+	<!-- Not logged in - Show About/Landing page -->
+	<div class="min-h-screen">
+		<!-- About Section -->
+		<AboutApp />
+	</div>
+{:else}
+	<!-- Logged in - Show Dashboard -->
+	<div class="min-h-screen bg-base-200">
+		<div class="container mx-auto p-4 md:p-8 max-w-7xl">
+			<div class="space-y-6">
+				<div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+					<div>
+						<h1 class="text-4xl font-bold mb-2">Witaj, {data.user.email.split('@')[0]}!</h1>
+						<p class="text-base-content/70">Monitoruj uprawnienia kierowców</p>
+					</div>
+					<form method="post" action="?/logout" use:enhance>
+						<button type="submit" class="btn btn-outline btn-sm">Wyloguj</button>
+					</form>
 				</div>
-				<form method="post" action="?/logout" use:enhance>
-					<button type="submit" class="btn btn-outline btn-sm">Wyloguj</button>
-				</form>
-			</div>
 
-		<div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-			<div class="xl:col-span-1 space-y-6">
-				<DriverStats drivers={data.drivers} />
-				<AddDriverForm {form} editDriver={editingDriver} onCancel={handleCancelEdit} />
-				<ImportDriversForm {form} />
+			<div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+				<div class="xl:col-span-1 space-y-6">
+					<DriverStats drivers={data.drivers} />
+					<AddDriverForm {form} editDriver={editingDriver} onCancel={handleCancelEdit} />
+					<ImportDriversForm {form} />
+				</div>
+				<div class="xl:col-span-2">
+					<DriverList drivers={data.drivers} onEdit={handleEdit} />
+				</div>
 			</div>
-			<div class="xl:col-span-2">
-				<DriverList drivers={data.drivers} onEdit={handleEdit} />
 			</div>
-		</div>
 		</div>
 	</div>
-</div>
+{/if}

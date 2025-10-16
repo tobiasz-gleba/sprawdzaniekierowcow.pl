@@ -13,8 +13,13 @@ async function validateLicense(documentSerialNumber: string): Promise<boolean> {
 	return true;
 }
 
-export const load: PageServerLoad = async () => {
-	const user = requireLogin();
+export const load: PageServerLoad = async (event) => {
+	const user = event.locals.user;
+	
+	// If not logged in, return null user and empty drivers array
+	if (!user) {
+		return { user: null, drivers: [] };
+	}
 	
 	// Fetch all drivers for the current user
 	const drivers = await db
@@ -231,7 +236,7 @@ export const actions: Actions = {
 		await auth.invalidateSession(event.locals.session.id);
 		auth.deleteSessionTokenCookie(event);
 
-		return redirect(302, '/login');
+		return redirect(302, '/');
 	}
 };
 
