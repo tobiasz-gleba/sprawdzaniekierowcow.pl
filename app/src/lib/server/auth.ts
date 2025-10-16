@@ -31,7 +31,7 @@ export async function validateSessionToken(token: string) {
 	const [result] = await db
 		.select({
 			// Adjust user table here to tweak returned data
-			user: { id: table.user.id, email: table.user.email },
+			user: { id: table.user.id, email: table.user.email, emailVerified: table.user.emailVerified },
 			session: table.session
 		})
 		.from(table.session)
@@ -78,4 +78,25 @@ export function deleteSessionTokenCookie(event: RequestEvent) {
 	event.cookies.delete(sessionCookieName, {
 		path: '/'
 	});
+}
+
+export function generateEmailVerificationToken(): string {
+	const bytes = crypto.getRandomValues(new Uint8Array(32));
+	const token = encodeBase64url(bytes);
+	return token;
+}
+
+export async function createEmailVerificationToken(userId: string): Promise<string> {
+	// Delete any existing tokens for this user
+	await db.delete(table.emailVerificationToken).where(eq(table.emailVerificationToken.userId, userId));
+	
+	const token = generateEmailVerificationToken();
+	const tokenEntry: table.EmailVerificationToken = {
+		id: token,
+		userId,
+		expiresAt: new Date(Date.now() + DAY_IN_MS) // 24 hours
+	};
+	
+	await db.insert(table.emailVerificationToken).values(tokenEntry);
+	return token;
 }

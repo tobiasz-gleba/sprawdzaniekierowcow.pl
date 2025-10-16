@@ -5,6 +5,7 @@ import { eq } from 'drizzle-orm';
 import * as auth from '$lib/server/auth';
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
+import { sendVerificationEmail } from '$lib/server/email';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
@@ -46,6 +47,13 @@ export const actions: Actions = {
 			return fail(400, { message: 'Incorrect email or password' });
 		}
 
+		// Check if email is verified
+		if (!existingUser.emailVerified) {
+			return fail(400, { 
+				message: 'Musisz najpierw potwierdzić swój adres email. Sprawdź swoją skrzynkę pocztową.' 
+			});
+		}
+
 		const sessionToken = auth.generateSessionToken();
 		const session = await auth.createSession(sessionToken, existingUser.id);
 		auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
@@ -74,15 +82,35 @@ export const actions: Actions = {
 		});
 
 		try {
-			await db.insert(table.user).values({ id: userId, email, passwordHash });
+			await db.insert(table.user).values({ 
+				id: userId, 
+				email, 
+				passwordHash,
+				emailVerified: false 
+			});
 
-			const sessionToken = auth.generateSessionToken();
-			const session = await auth.createSession(sessionToken, userId);
-			auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
-		} catch {
+			// Create verification token and send email
+			const verificationToken = await auth.createEmailVerificationToken(userId);
+			
+			try {
+				await sendVerificationEmail(email, verificationToken);
+				return {
+					success: true,
+					message: 'Konto zostało utworzone! Sprawdź swoją skrzynkę email i potwierdź adres, aby się zalogować.'
+				};
+			} catch (emailError) {
+				console.error('Email sending error:', emailError);
+				// User created but email failed - show verification link directly
+				const baseUrl = 'http://localhost:5173';
+				return {
+					success: true,
+					message: `Konto utworzone! Email nie mógł być wysłany. Link weryfikacyjny: ${baseUrl}/verify-email?token=${verificationToken}`
+				};
+			}
+		} catch (error) {
+			console.error('Registration error:', error);
 			return fail(500, { message: 'An error has occurred' });
 		}
-		return redirect(302, '/');
 	}
 };
 

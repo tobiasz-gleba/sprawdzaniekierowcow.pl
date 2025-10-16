@@ -1,4 +1,4 @@
-<script lang='ts'>
+<script lang="ts">
 	import { enhance } from '$app/forms';
 	import type { ActionData } from './$types';
 
@@ -6,15 +6,15 @@
 </script>
 
 <div class="hero min-h-screen bg-base-200">
-	<div class="hero-content flex-col lg:flex-row-reverse">
-		<div class="text-center lg:text-left">
-			<h1 class="text-5xl font-bold">Zaloguj się lub Zarejestruj</h1>
+	<div class="hero-content flex-col">
+		<div class="text-center">
+			<h1 class="text-4xl font-bold">Wyślij ponownie email weryfikacyjny</h1>
 			<p class="py-6">
-				Wprowadź swoje dane logowania, aby uzyskać dostęp do konta lub utworzyć nowe.
+				Wprowadź swój adres email, aby otrzymać nowy link weryfikacyjny.
 			</p>
 		</div>
-		<div class="card bg-base-100 w-full max-w-sm shrink-0 shadow-2xl">
-			<form class="card-body" method="post" action="?/login" use:enhance>
+		<div class="card bg-base-100 w-full max-w-sm shadow-2xl">
+			<form class="card-body" method="post" use:enhance>
 				{#if form?.message}
 					<div role="alert" class={form.success ? "alert alert-success" : "alert alert-error"}>
 						{#if form.success}
@@ -58,31 +58,14 @@
 						required
 					/>
 				</div>
-				<div class="form-control">
-					<label class="label" for="password">
-						<span class="label-text">Hasło</span>
-					</label>
-					<input
-						id="password"
-						type="password"
-						name="password"
-						placeholder="Wprowadź swoje hasło"
-						class="input input-bordered"
-						required
-					/>
-				</div>
-				<div class="form-control mt-6 gap-2">
-					<button class="btn btn-primary">Zaloguj się</button>
-					<button formaction="?/register" class="btn btn-secondary">
-						Zarejestruj się
-					</button>
+				<div class="form-control mt-6">
+					<button class="btn btn-primary">Wyślij email weryfikacyjny</button>
 				</div>
 				<div class="text-center mt-4">
-					<a href="/resend-verification" class="link link-primary text-sm">
-						Nie otrzymałeś emaila weryfikacyjnego?
-					</a>
+					<a href="/login" class="link link-primary text-sm">Wróć do logowania</a>
 				</div>
 			</form>
 		</div>
 	</div>
 </div>
+
