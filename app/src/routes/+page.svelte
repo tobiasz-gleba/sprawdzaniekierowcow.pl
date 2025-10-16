@@ -52,7 +52,7 @@
 			<div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
 				<div class="xl:col-span-1 space-y-6">
 					<DriverStats drivers={data.drivers} />
-					<AddDriverForm {form} editDriver={editingDriver} onCancel={handleCancelEdit} />
+					<AddDriverForm editDriver={editingDriver} onCancel={handleCancelEdit} />
 					<ImportDriversForm {form} />
 				</div>
 				<div class="xl:col-span-2">
