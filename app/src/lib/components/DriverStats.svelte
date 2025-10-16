@@ -14,13 +14,13 @@
 			<div class="flex-1 flex flex-col items-center justify-center p-4 bg-success/10 rounded-lg">
 				<div class="text-4xl mb-2">✅</div>
 				<div class="text-3xl font-bold text-success">{validCount}</div>
-				<div class="text-xs text-base-content/70 mt-1">Valid</div>
+				<div class="text-xs text-base-content/70 mt-1">Ważne</div>
 			</div>
 
 			<div class="flex-1 flex flex-col items-center justify-center p-4 bg-error/10 rounded-lg">
 				<div class="text-4xl mb-2">❌</div>
 				<div class="text-3xl font-bold text-error">{invalidCount}</div>
-				<div class="text-xs text-base-content/70 mt-1">Invalid</div>
+				<div class="text-xs text-base-content/70 mt-1">Nieważne</div>
 			</div>
 		</div>
 	</div>

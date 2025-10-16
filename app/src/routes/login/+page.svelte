@@ -8,9 +8,9 @@
 <div class="hero min-h-screen bg-base-200">
 	<div class="hero-content flex-col lg:flex-row-reverse">
 		<div class="text-center lg:text-left">
-			<h1 class="text-5xl font-bold">Login or Register</h1>
+			<h1 class="text-5xl font-bold">Zaloguj się lub Zarejestruj</h1>
 			<p class="py-6">
-				Enter your credentials to access your account or create a new one.
+				Wprowadź swoje dane logowania, aby uzyskać dostęp do konta lub utworzyć nowe.
 			</p>
 		</div>
 		<div class="card bg-base-100 w-full max-w-sm shrink-0 shadow-2xl">
@@ -39,28 +39,28 @@
 						id="email"
 						type="email"
 						name="email"
-						placeholder="email@example.com"
+						placeholder="email@przyklad.pl"
 						class="input input-bordered"
 						required
 					/>
 				</div>
 				<div class="form-control">
 					<label class="label" for="password">
-						<span class="label-text">Password</span>
+						<span class="label-text">Hasło</span>
 					</label>
 					<input
 						id="password"
 						type="password"
 						name="password"
-						placeholder="Enter your password"
+						placeholder="Wprowadź swoje hasło"
 						class="input input-bordered"
 						required
 					/>
 				</div>
 				<div class="form-control mt-6 gap-2">
-					<button class="btn btn-primary">Login</button>
+					<button class="btn btn-primary">Zaloguj się</button>
 					<button formaction="?/register" class="btn btn-secondary">
-						Register
+						Zarejestruj się
 					</button>
 				</div>
 			</form>

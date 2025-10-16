@@ -1,6 +1,8 @@
 <script lang="ts">
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.svg';
+	import Toast from '$lib/components/Toast.svelte';
+	import Footer from '$lib/components/Footer.svelte';
 
 	let { children } = $props();
 </script>
@@ -10,3 +12,5 @@
 </svelte:head>
 
 {@render children?.()}
+<Footer />
+<Toast />

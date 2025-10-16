@@ -1,10 +1,26 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { notifications } from '$lib/stores/notifications';
 	
 	let { form }: { form: any } = $props();
 	let fileInput: HTMLInputElement;
 	let selectedFile: File | null = $state(null);
 	let isProcessing = $state(false);
+	
+	// Show notification when form response changes
+	$effect(() => {
+		if (form?.importSuccess) {
+			notifications.add(
+				form.importMessage || 'Kierowcy zaimportowani pomyślnie!',
+				'success'
+			);
+		} else if (form?.importError) {
+			notifications.add(
+				form.importMessage || 'Nie udało się zaimportować kierowców',
+				'error'
+			);
+		}
+	});
 	
 	function handleFileSelect(event: Event) {
 		const target = event.target as HTMLInputElement;
@@ -23,28 +39,10 @@
 
 <div class="card bg-base-100 shadow-xl">
 	<div class="card-body">
-		<h2 class="card-title">Import Drivers from CSV</h2>
+		<h2 class="card-title">Importuj Kierowców z CSV</h2>
 		<p class="text-sm text-base-content/70 mb-4">
-			Upload a CSV file with columns: Name, Surname, Document Serial Number
+			Prześlij plik CSV z kolumnami: Imię, Nazwisko, Numer Seryjny Dokumentu
 		</p>
-		
-		{#if form?.importSuccess}
-			<div class="alert alert-success">
-				<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-				</svg>
-				<span>{form.importMessage || 'Drivers imported successfully!'}</span>
-			</div>
-		{/if}
-		
-		{#if form?.importError}
-			<div class="alert alert-error">
-				<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-				</svg>
-				<span>{form.importMessage || 'Failed to import drivers'}</span>
-			</div>
-		{/if}
 		
 		<form 
 			method="post" 
@@ -61,7 +59,7 @@
 			
 			<div class="form-control w-full">
 				<label class="label" for="csv-file">
-					<span class="label-text">Select CSV file</span>
+					<span class="label-text">Wybierz plik CSV</span>
 				</label>
 				<input
 					id="csv-file"
@@ -83,9 +81,9 @@
 					disabled={!selectedFile || isProcessing}>
 					{#if isProcessing}
 						<span class="loading loading-spinner loading-sm"></span>
-						Importing...
+						Importowanie...
 					{:else}
-						📤 Import CSV
+						📤 Importuj CSV
 					{/if}
 				</button>
 				
@@ -95,7 +93,7 @@
 						class="btn btn-ghost"
 						onclick={handleReset}
 						disabled={isProcessing}>
-						Clear
+						Wyczyść
 					</button>
 				{/if}
 			</div>

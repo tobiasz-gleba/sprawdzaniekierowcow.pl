@@ -2,11 +2,12 @@
 	import { enhance } from '$app/forms';
 	import type { Driver } from '$lib/server/db/schema';
 	import CryptoJS from 'crypto-js';
+	import { notifications } from '$lib/stores/notifications';
 
 	let { drivers, onEdit }: { drivers: Driver[]; onEdit: (driver: Driver) => void } = $props();
 	
 	function confirmDelete(driver: Driver) {
-		return confirm(`Are you sure you want to delete driver ${driver.name} ${driver.surname} (Document: ${driver.documentSerialNumber})?\n\nThis action cannot be undone.`);
+		return confirm(`Czy na pewno chcesz usunąć kierowcę ${driver.name} ${driver.surname} (Dokument: ${driver.documentSerialNumber})?\n\nTej operacji nie można cofnąć.`);
 	}
 	
 	function handleCheckDriver(driver: Driver, e: MouseEvent) {
@@ -20,54 +21,60 @@
 	
 	function exportToCSV() {
 		if (drivers.length === 0) {
-			alert('No drivers to export');
+			notifications.add('Brak kierowców do eksportu', 'warning');
 			return;
 		}
 		
-		// Create CSV header
-		const headers = ['Name', 'Surname', 'Document Serial Number', 'Status'];
-		const csvRows = [headers.join(',')];
-		
-		// Add driver data
-		drivers.forEach(driver => {
-			const row = [
-				driver.name,
-				driver.surname,
-				driver.documentSerialNumber,
-				driver.status ? 'Valid' : 'Invalid'
-			];
-			// Escape fields that might contain commas
-			const escapedRow = row.map(field => `"${field}"`);
-			csvRows.push(escapedRow.join(','));
-		});
-		
-		// Create blob and download
-		const csvContent = csvRows.join('\n');
-		const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-		const link = document.createElement('a');
-		const url = URL.createObjectURL(blob);
-		
-		link.setAttribute('href', url);
-		link.setAttribute('download', `drivers_${new Date().toISOString().split('T')[0]}.csv`);
-		link.style.visibility = 'hidden';
-		
-		document.body.appendChild(link);
-		link.click();
-		document.body.removeChild(link);
+		try {
+			// Create CSV header
+			const headers = ['Imię', 'Nazwisko', 'Numer Seryjny Dokumentu', 'Status'];
+			const csvRows = [headers.join(',')];
+			
+			// Add driver data
+			drivers.forEach(driver => {
+				const row = [
+					driver.name,
+					driver.surname,
+					driver.documentSerialNumber,
+					driver.status ? 'Ważne' : 'Nieważne'
+				];
+				// Escape fields that might contain commas
+				const escapedRow = row.map(field => `"${field}"`);
+				csvRows.push(escapedRow.join(','));
+			});
+			
+			// Create blob and download
+			const csvContent = csvRows.join('\n');
+			const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+			const link = document.createElement('a');
+			const url = URL.createObjectURL(blob);
+			
+			link.setAttribute('href', url);
+			link.setAttribute('download', `kierowcy_${new Date().toISOString().split('T')[0]}.csv`);
+			link.style.visibility = 'hidden';
+			
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
+			
+			notifications.add(`Pomyślnie wyeksportowano ${drivers.length} kierowców do CSV`, 'success');
+		} catch (error) {
+			notifications.add('Nie udało się wyeksportować pliku CSV', 'error');
+		}
 	}
 </script>
 
 <div class="card bg-base-100 shadow-xl h-full">
 	<div class="card-body">
 		<div class="flex justify-between items-center mb-4">
-			<h2 class="card-title">Drivers Report</h2>
+			<h2 class="card-title">Raport Kierowców</h2>
 			{#if drivers.length > 0}
 				<button
 					type="button"
 					class="btn btn-primary btn-sm"
 					onclick={exportToCSV}
-					aria-label="Export to CSV">
-					📥 Export CSV
+					aria-label="Eksportuj do CSV">
+					📥 Eksportuj CSV
 				</button>
 			{/if}
 		</div>
@@ -84,18 +91,18 @@
 						stroke-width="2"
 						d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
 				</svg>
-				<span>No drivers added yet. Add your first driver above!</span>
+				<span>Nie dodano jeszcze żadnych kierowców. Dodaj swojego pierwszego kierowcę powyżej!</span>
 			</div>
 		{:else}
 			<div class="overflow-x-auto">
 				<table class="table table-zebra w-full">
 					<thead>
 						<tr>
-							<th>Name</th>
-							<th>Surname</th>
-							<th>Document Serial Number</th>
+							<th>Imię</th>
+							<th>Nazwisko</th>
+							<th>Numer Seryjny Dokumentu</th>
 							<th class="w-20">Status</th>
-							<th class="w-20">Action</th>
+							<th class="w-20">Akcja</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -115,31 +122,38 @@
 											type="button"
 											class="btn btn-ghost btn-sm"
 											onclick={(e) => handleCheckDriver(driver, e)}
-											aria-label="Check driver license">
+											aria-label="Sprawdź prawo jazdy">
 											🔗
 										</button>
 										<button
 											type="button"
 											class="btn btn-ghost btn-sm"
 											onclick={() => onEdit(driver)}
-											aria-label="Edit driver">
+											aria-label="Edytuj kierowcę">
 											✏️
 										</button>
-										<form
-											method="post"
-											action="?/deleteDriver"
-											use:enhance
-											onsubmit={(e) => {
-												if (!confirmDelete(driver)) {
-													e.preventDefault();
-													return false;
+									<form
+										method="post"
+										action="?/deleteDriver"
+										use:enhance={({ cancel }) => {
+											if (!confirmDelete(driver)) {
+												cancel();
+												return;
+											}
+											return async ({ result, update }) => {
+												if (result.type === 'success') {
+													notifications.add(`Kierowca ${driver.name} ${driver.surname} usunięty pomyślnie`, 'success');
+												} else if (result.type === 'failure') {
+													notifications.add('Nie udało się usunąć kierowcy', 'error');
 												}
-											}}>
-											<input type="hidden" name="driverId" value={driver.id} />
-											<button type="submit" class="btn btn-ghost btn-sm" aria-label="Delete driver">
-												🗑️
-											</button>
-										</form>
+												await update();
+											};
+										}}>
+										<input type="hidden" name="driverId" value={driver.id} />
+										<button type="submit" class="btn btn-ghost btn-sm" aria-label="Usuń kierowcę">
+											🗑️
+										</button>
+									</form>
 									</div>
 								</td>
 							</tr>
