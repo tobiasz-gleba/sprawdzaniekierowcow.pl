@@ -6,8 +6,8 @@ metadata:
   labels:
     app: sprawdzaniekierowcow
 spec:
-  schedule: "0 0 * * *"  # Run at midnight every day
-  concurrencyPolicy: Forbid  # Prevent overlapping runs
+  schedule: "0 0 * * *" # Run at midnight every day
+  concurrencyPolicy: Forbid # Prevent overlapping runs
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 3
   jobTemplate:
@@ -21,7 +21,7 @@ spec:
           restartPolicy: OnFailure
           containers:
           - name: validate-all
-            image: ghcr.io/tobiasz-gleba/sprawdzaniekierowcow.pl:20251017131315  # {"$imagepolicy": "sprawdzaniekierowcow:sprawdzaniekierowcow"}
+            image: ghcr.io/tobiasz-gleba/sprawdzaniekierowcow.pl:20251017162512 # {"$imagepolicy": "sprawdzaniekierowcow:sprawdzaniekierowcow"}
             command: ["npm", "run", "validate:all"]
             workingDir: /app
             env:
@@ -58,7 +58,6 @@ spec:
               requests:
                 memory: "128Mi"
                 cpu: "100m"
-
 ---
 apiVersion: batch/v1
 kind: CronJob
@@ -68,8 +67,8 @@ metadata:
   labels:
     app: sprawdzaniekierowcow
 spec:
-  schedule: "0 8 * * *"  # Run at 8 AM every day (after validation)
-  concurrencyPolicy: Forbid  # Prevent overlapping runs
+  schedule: "0 8 * * *" # Run at 8 AM every day (after validation)
+  concurrencyPolicy: Forbid # Prevent overlapping runs
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 3
   jobTemplate:
@@ -83,7 +82,7 @@ spec:
           restartPolicy: OnFailure
           containers:
           - name: notify-invalid
-            image: ghcr.io/tobiasz-gleba/sprawdzaniekierowcow.pl:20251017131315  # {"$imagepolicy": "sprawdzaniekierowcow:sprawdzaniekierowcow"}
+            image: ghcr.io/tobiasz-gleba/sprawdzaniekierowcow.pl:20251017162512 # {"$imagepolicy": "sprawdzaniekierowcow:sprawdzaniekierowcow"}
             command: ["npm", "run", "notify:invalid"]
             workingDir: /app
             env:
@@ -120,5 +119,3 @@ spec:
               requests:
                 memory: "64Mi"
                 cpu: "50m"
-
-
