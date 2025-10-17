@@ -1,0 +1,44 @@
+name: Cleanup Docker Images
+
+on:
+  workflow_dispatch:
+    inputs:
+      keep_latest:
+        description: 'Keep the latest tag'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+      keep_count:
+        description: 'Number of recent images to keep (0 = delete all)'
+        required: false
+        default: '5'
+        type: string
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+      
+    steps:
+      - name: Delete old container images
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: 'sprawdzaniekierowcow.pl'
+          package-type: 'container'
+          min-versions-to-keep: ${{ github.event.inputs.keep_count || 5 }}
+          delete-only-untagged-versions: false
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Delete all untagged images
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: 'sprawdzaniekierowcow.pl'
+          package-type: 'container'
+          delete-only-untagged-versions: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
