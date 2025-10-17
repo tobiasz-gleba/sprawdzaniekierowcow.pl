@@ -21,14 +21,22 @@
 			<!-- Right Column - Description and CTA -->
 			<div class="flex flex-col justify-center">
 				<p class="mb-8 text-lg leading-relaxed opacity-70 md:text-xl">
-					Informacje o uprawnieniach kierowców są dostępne dla wszystkich użytkowników. W naszym
+					Informacje o prawie jazdy są dostępne dla wszystkich w 
+					<a 
+						href="https://moj.gov.pl/uslugi/engine/ng/index?xFormsAppName=UprawnieniaKierowcow&xFormsOrigin=EXTERNAL" 
+						target="_blank" 
+						rel="noopener noreferrer"
+						class="link link-primary font-semibold"
+					>
+						Centralnej Ewidencji Kierowców
+					</a>. W naszym
 					panelu administracyjnym, możesz monitorować oraz otrzymywać powiadomienia w razie zmiany
 					statusu (odebrania, wygaśnięcia) uprawnienia do prowadzenia pojazdów Twojego pracownika.
 				</p>
 
 				<div>
 					<a href="/login" class="btn gap-2 btn-lg btn-primary">
-						Zaloguj się
+						Ustaw powiadomienia w 2 minuty
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
 							fill="none"

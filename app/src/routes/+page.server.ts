@@ -3,7 +3,7 @@ import { fail, redirect } from '@sveltejs/kit';
 import { getRequestEvent } from '$app/server';
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
-import { eq, desc, and } from 'drizzle-orm';
+import { eq, desc, and, asc } from 'drizzle-orm';
 import type { Actions, PageServerLoad } from './$types';
 
 // Function to validate driver license
@@ -22,11 +22,12 @@ export const load: PageServerLoad = async (event) => {
 	}
 
 	// Fetch all drivers for the current user
+	// Sort by status ascending (0/false first, then 1/true) and then by creation date descending
 	const drivers = await db
 		.select()
 		.from(table.driver)
 		.where(eq(table.driver.userId, user.id))
-		.orderBy(desc(table.driver.createdAt));
+		.orderBy(asc(table.driver.status), desc(table.driver.createdAt));
 
 	return { user, drivers };
 };

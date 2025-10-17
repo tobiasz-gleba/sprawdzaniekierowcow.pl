@@ -16,26 +16,18 @@
 		<div>
 			<p class="text-lg font-bold">sprawdzaniekierowcow.pl</p>
 			<p class="mt-1 text-sm">
-				Profesjonalne zarządzanie uprawnieniami kierowców.
+				Darmowe monitorowanie prawa jazdy kierowców.
 				<br />
-				Sprawdzaj ważność uprawnień i kontroluj swoją flotę.
+				Otrzymuj powiadomienia o zmianach statusu uprawnień kierowców.
 			</p>
 		</div>
 	</aside>
 	<nav>
-		<h6 class="footer-title">Informacje</h6>
+		<h6 class="footer-title">POMOC</h6>
 		<div class="flex flex-col gap-2">
-			<a href="#" class="link link-hover">O aplikacji</a>
-			<a href="#" class="link link-hover">Polityka prywatności</a>
-			<a href="#" class="link link-hover">Kontakt</a>
-		</div>
-	</nav>
-	<nav>
-		<h6 class="footer-title">Wsparcie</h6>
-		<div class="flex flex-col gap-2">
-			<a href="#" class="link link-hover">Pomoc</a>
-			<a href="#" class="link link-hover">Dokumentacja</a>
-			<a href="#" class="link link-hover">FAQ</a>
+			<a href="https://github.com/tobiasz-gleba/sprawdzaniekierowcow.pl" class="link link-hover">GitHub</a>
+			<a href="/privacy-policy" class="link link-hover">Polityka prywatności</a>
+			<a href="mailto:contact@sprawdzaniekierowcow.pl" class="link link-hover">Kontakt</a>
 		</div>
 	</nav>
 </footer>
