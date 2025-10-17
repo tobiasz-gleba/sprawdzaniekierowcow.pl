@@ -145,5 +145,5 @@ Jeśli nie prosiłeś o zresetowanie hasła, zignoruj tę wiadomość. Twoje has
 
 function getBaseUrl(): string {
 	// Use environment variable for base URL
-	return env.PUBLIC_BASE_URL || 'http://localhost:5173';
+	return env.PUBLIC_BASE_URL || 'https://sprawdzaniekierowcow.pl';
 }
