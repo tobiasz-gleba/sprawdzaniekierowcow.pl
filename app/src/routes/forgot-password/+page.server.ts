@@ -1,4 +1,4 @@
-import { fail } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
@@ -9,7 +9,7 @@ import type { Actions, PageServerLoad } from './$types';
 export const load: PageServerLoad = async (event) => {
 	// Redirect if already logged in
 	if (event.locals.user) {
-		return { redirect: '/' };
+		return redirect(302, '/dashboard');
 	}
 	return {};
 };
