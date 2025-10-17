@@ -17,9 +17,18 @@ export const load: PageServerLoad = async (event) => {
 	const user = event.locals.user;
 
 	// If not logged in, return null user and empty drivers array
+	// Cache the static landing page for 24 hours
 	if (!user) {
+		event.setHeaders({
+			'Cache-Control': 'public, max-age=86400, s-maxage=86400'
+		});
 		return { user: null, drivers: [] };
 	}
+
+	// For logged-in users, don't cache (dynamic content)
+	event.setHeaders({
+		'Cache-Control': 'private, no-cache, no-store, must-revalidate'
+	});
 
 	// Fetch all drivers for the current user
 	// Sort by status ascending (0/false first, then 1/true) and then by creation date descending
