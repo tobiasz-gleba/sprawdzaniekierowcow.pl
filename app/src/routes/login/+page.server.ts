@@ -23,18 +23,18 @@ export const actions: Actions = {
 
 		if (!validateEmail(email)) {
 			return fail(400, {
-				message: 'Invalid email address'
+				message: 'Nieprawidłowy adres email'
 			});
 		}
 		if (!validatePassword(password)) {
-			return fail(400, { message: 'Invalid password (min 6, max 255 characters)' });
+			return fail(400, { message: 'Nieprawidłowe hasło (min. 6, max. 255 znaków)' });
 		}
 
 		const results = await db.select().from(table.user).where(eq(table.user.email, email));
 
 		const existingUser = results.at(0);
 		if (!existingUser) {
-			return fail(400, { message: 'Incorrect email or password' });
+			return fail(400, { message: 'Nieprawidłowy email lub hasło' });
 		}
 
 		const validPassword = await verify(existingUser.passwordHash, password, {
@@ -44,7 +44,7 @@ export const actions: Actions = {
 			parallelism: 1
 		});
 		if (!validPassword) {
-			return fail(400, { message: 'Incorrect email or password' });
+			return fail(400, { message: 'Nieprawidłowy email lub hasło' });
 		}
 
 		// Check if email is verified
@@ -66,10 +66,10 @@ export const actions: Actions = {
 		const password = formData.get('password');
 
 		if (!validateEmail(email)) {
-			return fail(400, { message: 'Invalid email address' });
+			return fail(400, { message: 'Nieprawidłowy adres email' });
 		}
 		if (!validatePassword(password)) {
-			return fail(400, { message: 'Invalid password' });
+			return fail(400, { message: 'Nieprawidłowe hasło (min. 6 znaków)' });
 		}
 
 		const userId = generateUserId();
@@ -100,7 +100,7 @@ export const actions: Actions = {
 			};
 		} catch (error) {
 			console.error('Registration error:', error);
-			return fail(500, { message: 'An error has occurred' });
+			return fail(500, { message: 'Wystąpił błąd. Spróbuj ponownie.' });
 		}
 	}
 };
