@@ -6,7 +6,7 @@ metadata:
   labels:
     app: sprawdzaniekierowcow
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: sprawdzaniekierowcow
@@ -72,9 +72,13 @@ spec:
         - name: PUBLIC_BASE_URL
           value: https://sprawdzaniekierowcow.pl
         - name: EMAIL_USER
-          value: test-email@redstoneinstitute.pl
+          value: kontakt@sprawdzaniekierowcow.pl
         - name: EMAIL_PASS
-          value: dsfdsfdsfds
+          valueFrom:
+            secretKeyRef:
+              name: github-settings
+              key: MAIL_PASSWORD_SPRAWDZANIEKIEROWCOW
+              optional: false
         - name: SMTP_HOST
           value: smtp.iq.pl
         - name: SMTP_PORT
