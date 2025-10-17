@@ -1,9 +1,11 @@
 import nodemailer from 'nodemailer';
 import type { Transporter } from 'nodemailer';
-import { EMAIL_USER, EMAIL_PASS, SMTP_HOST, SMTP_PORT } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 
 // Load SMTP configuration from environment variables
 function getEmailConfig() {
+	const { EMAIL_USER, EMAIL_PASS, SMTP_HOST, SMTP_PORT } = env;
+	
 	if (!EMAIL_USER || !EMAIL_PASS || !SMTP_HOST) {
 		throw new Error(
 			'Missing required SMTP environment variables: EMAIL_USER, EMAIL_PASS, SMTP_HOST'
@@ -143,5 +145,5 @@ Jeśli nie prosiłeś o zresetowanie hasła, zignoruj tę wiadomość. Twoje has
 
 function getBaseUrl(): string {
 	// Use environment variable for base URL
-	return process.env.PUBLIC_BASE_URL || 'http://localhost:5173';
+	return env.PUBLIC_BASE_URL || 'http://localhost:5173';
 }
