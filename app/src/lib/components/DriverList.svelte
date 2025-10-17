@@ -34,11 +34,12 @@
 
 			// Add driver data
 			drivers.forEach((driver) => {
+				const statusText = driver.status === 1 ? 'Ważne' : driver.status === 2 ? 'W trakcie weryfikacji' : 'Nieważne';
 				const row = [
 					driver.name,
 					driver.surname,
 					driver.documentSerialNumber,
-					driver.status ? 'Ważne' : 'Nieważne'
+					statusText
 				];
 				// Escape fields that might contain commas
 				const escapedRow = row.map((field) => `"${field}"`);
@@ -119,8 +120,14 @@
 								<td>
 									<span class="badge badge-lg badge-neutral">{driver.documentSerialNumber}</span>
 								</td>
-								<td class="text-center text-2xl">
-									{driver.status ? '✅' : '❌'}
+								<td class="text-center">
+									{#if driver.status === 1}
+										<span class="text-2xl" title="Ważne">✅</span>
+									{:else if driver.status === 2}
+										<span class="loading loading-spinner loading-md text-warning" title="W trakcie weryfikacji"></span>
+									{:else}
+										<span class="text-2xl" title="Nieważne">❌</span>
+									{/if}
 								</td>
 								<td>
 									<div class="flex gap-1">
@@ -132,6 +139,28 @@
 										>
 											🔗
 										</button>
+										<form
+											method="post"
+											action="?/revalidateDriver"
+											use:enhance={() => {
+												return async ({ result, update }) => {
+													if (result.type === 'success') {
+														notifications.add(
+															`Weryfikacja kierowcy ${driver.name} ${driver.surname} zakończona`,
+															'success'
+														);
+													} else if (result.type === 'failure') {
+														notifications.add('Nie udało się zweryfikować kierowcy', 'error');
+													}
+													await update();
+												};
+											}}
+										>
+											<input type="hidden" name="driverId" value={driver.id} />
+											<button type="submit" class="btn btn-ghost btn-sm" aria-label="Zweryfikuj ponownie">
+												🔄
+											</button>
+										</form>
 										<button
 											type="button"
 											class="btn btn-ghost btn-sm"

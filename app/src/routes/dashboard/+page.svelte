@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { invalidateAll } from '$app/navigation';
+	import { onDestroy } from 'svelte';
 	import type { PageServerData, ActionData } from './$types';
 	import type { Driver } from '$lib/server/db/schema';
 	import AddDriverForm from '$lib/components/AddDriverForm.svelte';
@@ -23,6 +25,40 @@
 	$effect(() => {
 		if (form?.success) {
 			editingDriver = null;
+		}
+	});
+
+	// Auto-refresh when there are pending drivers
+	let pollInterval: ReturnType<typeof setInterval> | null = null;
+
+	$effect(() => {
+		// Check if there are any pending drivers (status === 2)
+		const hasPendingDrivers = data.drivers.some((driver) => driver.status === 2);
+
+		if (hasPendingDrivers && !pollInterval) {
+			// Start polling every 3 seconds
+			pollInterval = setInterval(() => {
+				invalidateAll();
+			}, 3000);
+		} else if (!hasPendingDrivers && pollInterval) {
+			// Stop polling when no more pending drivers
+			clearInterval(pollInterval);
+			pollInterval = null;
+		}
+
+		// Cleanup function
+		return () => {
+			if (pollInterval) {
+				clearInterval(pollInterval);
+				pollInterval = null;
+			}
+		};
+	});
+
+	// Ensure cleanup on component destroy
+	onDestroy(() => {
+		if (pollInterval) {
+			clearInterval(pollInterval);
 		}
 	});
 </script>

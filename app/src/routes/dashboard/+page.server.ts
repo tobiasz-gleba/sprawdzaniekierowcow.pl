@@ -4,13 +4,7 @@ import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
 import { eq, desc, and, asc } from 'drizzle-orm';
 import type { Actions, PageServerLoad } from './$types';
-
-// Function to validate driver license
-async function validateLicense(documentSerialNumber: string): Promise<boolean> {
-	// For now, always return true
-	// In the future, this would call an external API or validation service
-	return true;
-}
+import { scheduleValidation, scheduleBatchValidation, revalidateDriver } from '$lib/server/backgroundValidator';
 
 export const load: PageServerLoad = async (event) => {
 	// Require authentication
@@ -61,17 +55,19 @@ export const actions: Actions = {
 		}
 
 		try {
-			// Validate the license
-			const isValid = await validateLicense(documentSerialNumber.trim());
-
-			await db.insert(table.driver).values({
+			// Insert driver with pending status (2)
+			const result = await db.insert(table.driver).values({
 				name: name.trim(),
 				surname: surname.trim(),
 				documentSerialNumber: documentSerialNumber.trim(),
-				status: isValid ? 1 : 0,
+				status: 2, // pending
 				userId: event.locals.user.id,
 				createdAt: new Date()
 			});
+
+			// Schedule background validation
+			const insertId = Number(result[0].insertId);
+			scheduleValidation(insertId);
 
 			return { success: true };
 		} catch (error) {
@@ -109,17 +105,14 @@ export const actions: Actions = {
 		}
 
 		try {
-			// Validate the license again
-			const isValid = await validateLicense(documentSerialNumber.trim());
-
-			// Update only if the driver belongs to the current user
+			// Update with pending status and schedule background validation
 			await db
 				.update(table.driver)
 				.set({
 					name: name.trim(),
 					surname: surname.trim(),
 					documentSerialNumber: documentSerialNumber.trim(),
-					status: isValid ? 1 : 0
+					status: 2 // pending
 				})
 				.where(
 					and(
@@ -127,6 +120,9 @@ export const actions: Actions = {
 						eq(table.driver.userId, event.locals.user.id)
 					)
 				);
+
+			// Schedule background validation
+			scheduleValidation(parseInt(driverId));
 
 			return { success: true };
 		} catch (error) {
@@ -189,6 +185,7 @@ export const actions: Actions = {
 			const dataLines = lines.slice(1);
 			let successCount = 0;
 			let errorCount = 0;
+			const insertedIds: number[] = [];
 
 			for (const line of dataLines) {
 				// Parse CSV line (simple implementation)
@@ -207,29 +204,75 @@ export const actions: Actions = {
 				}
 
 				try {
-					const isValid = await validateLicense(documentSerialNumber);
-
-					await db.insert(table.driver).values({
+					// Insert with pending status
+					const result = await db.insert(table.driver).values({
 						name: name.trim(),
 						surname: surname.trim(),
 						documentSerialNumber: documentSerialNumber.trim(),
-						status: isValid ? 1 : 0,
+						status: 2, // pending
 						userId: event.locals.user.id,
 						createdAt: new Date()
 					});
 
+					const insertId = Number(result[0].insertId);
+					insertedIds.push(insertId);
 					successCount++;
 				} catch (error) {
 					errorCount++;
 				}
 			}
 
+			// Schedule batch validation in the background
+			if (insertedIds.length > 0) {
+				scheduleBatchValidation(insertedIds);
+			}
+
 			return {
 				importSuccess: true,
-				importMessage: `Successfully imported ${successCount} driver(s)${errorCount > 0 ? `, ${errorCount} failed` : ''}`
+				importMessage: `Successfully imported ${successCount} driver(s)${errorCount > 0 ? `, ${errorCount} failed` : ''}. Validation in progress...`
 			};
 		} catch (error) {
 			return fail(500, { importError: true, importMessage: 'Failed to process CSV file' });
+		}
+	},
+	revalidateDriver: async (event) => {
+		if (!event.locals.user) {
+			return fail(401, { message: 'Unauthorized' });
+		}
+
+		const formData = await event.request.formData();
+		const driverId = formData.get('driverId');
+
+		if (!driverId || typeof driverId !== 'string') {
+			return fail(400, { message: 'Invalid driver ID' });
+		}
+
+		try {
+			// Verify the driver belongs to the current user
+			const drivers = await db
+				.select()
+				.from(table.driver)
+				.where(
+					and(
+						eq(table.driver.id, parseInt(driverId)),
+						eq(table.driver.userId, event.locals.user.id)
+					)
+				)
+				.limit(1);
+
+			if (drivers.length === 0) {
+				return fail(404, { message: 'Driver not found' });
+			}
+
+			// Re-validate the driver
+			const isValid = await revalidateDriver(parseInt(driverId));
+
+			return { 
+				success: true, 
+				message: isValid ? 'Driver is valid' : 'Driver is invalid'
+			};
+		} catch (error) {
+			return fail(500, { message: 'Failed to revalidate driver' });
 		}
 	},
 	logout: async (event) => {

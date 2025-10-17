@@ -21,7 +21,7 @@ export const driver = mysqlTable('driver', {
 	name: varchar('name', { length: 255 }).notNull(),
 	surname: varchar('surname', { length: 255 }).notNull(),
 	documentSerialNumber: varchar('document_serial_number', { length: 255 }).notNull(),
-	status: int('status').notNull().default(1),
+	status: int('status').notNull().default(2), // 0=invalid, 1=valid, 2=pending
 	userId: varchar('user_id', { length: 255 })
 		.notNull()
 		.references(() => user.id),

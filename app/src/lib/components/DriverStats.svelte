@@ -3,9 +3,10 @@
 
 	let { drivers }: { drivers: Driver[] } = $props();
 
-	// Match the display logic in DriverList: truthy = valid, falsy = invalid
-	let validCount = $derived(drivers.filter((d) => d.status).length);
-	let invalidCount = $derived(drivers.filter((d) => !d.status).length);
+	// Status: 0=invalid, 1=valid, 2=pending
+	let validCount = $derived(drivers.filter((d) => d.status === 1).length);
+	let invalidCount = $derived(drivers.filter((d) => d.status === 0).length);
+	let pendingCount = $derived(drivers.filter((d) => d.status === 2).length);
 </script>
 
 <div class="card bg-base-100 shadow-xl">
@@ -15,6 +16,12 @@
 				<div class="mb-2 text-4xl">✅</div>
 				<div class="text-3xl font-bold text-success">{validCount}</div>
 				<div class="mt-1 text-xs text-base-content/70">Ważne</div>
+			</div>
+
+			<div class="flex flex-1 flex-col items-center justify-center rounded-lg bg-warning/10 p-4">
+				<div class="mb-2 text-4xl">⏳</div>
+				<div class="text-3xl font-bold text-warning">{pendingCount}</div>
+				<div class="mt-1 text-xs text-base-content/70">Weryfikacja</div>
 			</div>
 
 			<div class="flex flex-1 flex-col items-center justify-center rounded-lg bg-error/10 p-4">
