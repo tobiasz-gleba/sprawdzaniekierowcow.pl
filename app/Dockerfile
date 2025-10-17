@@ -1,7 +1,7 @@
 # Multi-stage build for SvelteKit production
 
 # Stage 1: Build stage
-FROM node:20-alpine AS builder
+FROM node:20-bookworm-slim AS builder
 
 # Set working directory
 WORKDIR /app
@@ -33,13 +33,16 @@ RUN npm run build
 RUN npm prune --production
 
 # Stage 2: Production stage
-FROM node:20-alpine AS production
+FROM node:20-bookworm-slim AS production
 
 # Set working directory
 WORKDIR /app
 
-# Install dumb-init to handle signals properly
-RUN apk add --no-cache dumb-init
+# Install system dependencies for Playwright and dumb-init
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    dumb-init \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy package.json first for dependency installation
 COPY --from=builder /app/package.json ./package.json
@@ -47,6 +50,9 @@ COPY --from=builder /app/package.json ./package.json
 # Install production dependencies and drizzle-kit for migrations
 RUN npm install --production && \
     npm install drizzle-kit tsx --save-prod
+
+# Install Playwright browsers with system dependencies (before switching to non-root user)
+RUN npx playwright install --with-deps chromium
 
 # Copy built application from builder
 COPY --from=builder /app/build ./build
@@ -58,8 +64,8 @@ COPY --from=builder /app/drizzle.config.ts ./drizzle.config.ts
 COPY --from=builder /app/src/lib/server/db ./src/lib/server/db
 
 # Create non-root user
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001
+RUN groupadd -g 1001 nodejs && \
+    useradd -r -u 1001 -g nodejs nodejs
 
 # Change ownership to non-root user
 RUN chown -R nodejs:nodejs /app
@@ -73,7 +79,8 @@ EXPOSE 3000
 # Set environment variables
 ENV NODE_ENV=production \
     PORT=3000 \
-    HOST=0.0.0.0
+    HOST=0.0.0.0 \
+    PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 
 # Use dumb-init to handle signals
 ENTRYPOINT ["dumb-init", "--"]
