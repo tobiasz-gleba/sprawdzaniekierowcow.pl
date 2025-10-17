@@ -22,7 +22,7 @@ spec:
     spec:
       initContainers:
       - name: migrations
-        image: ghcr.io/tobiasz-gleba/sprawdzaniekierowcow.pl:20251017081251  # {"$imagepolicy": "sprawdzaniekierowcow:sprawdzaniekierowcow"}
+        image: ghcr.io/tobiasz-gleba/sprawdzaniekierowcow.pl:20251017083901  # {"$imagepolicy": "sprawdzaniekierowcow:sprawdzaniekierowcow"}
         command: ["npm", "run", "db:migrate"]
         workingDir: /app
         env:
@@ -40,7 +40,7 @@ spec:
               optional: false
       containers:
       - name: sprawdzaniekierowcow
-        image: ghcr.io/tobiasz-gleba/sprawdzaniekierowcow.pl:20251017081251  # {"$imagepolicy": "sprawdzaniekierowcow:sprawdzaniekierowcow"}
+        image: ghcr.io/tobiasz-gleba/sprawdzaniekierowcow.pl:20251017083901  # {"$imagepolicy": "sprawdzaniekierowcow:sprawdzaniekierowcow"}
         ports:
         - containerPort: 3000
         livenessProbe:
