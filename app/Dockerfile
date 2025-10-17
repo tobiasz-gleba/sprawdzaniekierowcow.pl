@@ -44,6 +44,10 @@ RUN apt-get update && \
     dumb-init \
     && rm -rf /var/lib/apt/lists/*
 
+# Create non-root user early
+RUN groupadd -g 1001 nodejs && \
+    useradd -r -u 1001 -g nodejs nodejs
+
 # Copy package.json first for dependency installation
 COPY --from=builder /app/package.json ./package.json
 
@@ -51,7 +55,14 @@ COPY --from=builder /app/package.json ./package.json
 RUN npm install --production && \
     npm install drizzle-kit tsx --save-prod
 
-# Install Playwright browsers with system dependencies (before switching to non-root user)
+# Create directory for Playwright browsers and set ownership
+RUN mkdir -p /ms-playwright && \
+    chown -R nodejs:nodejs /ms-playwright
+
+# Set Playwright browsers path before installation
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+
+# Install Playwright browsers with system dependencies as root
 RUN npx playwright install --with-deps chromium
 
 # Copy built application from builder
@@ -63,12 +74,8 @@ COPY --from=builder /app/drizzle ./drizzle
 COPY --from=builder /app/drizzle.config.ts ./drizzle.config.ts
 COPY --from=builder /app/src/lib/server/db ./src/lib/server/db
 
-# Create non-root user
-RUN groupadd -g 1001 nodejs && \
-    useradd -r -u 1001 -g nodejs nodejs
-
-# Change ownership to non-root user
-RUN chown -R nodejs:nodejs /app
+# Ensure proper ownership of all app files and playwright cache
+RUN chown -R nodejs:nodejs /app /ms-playwright
 
 # Switch to non-root user
 USER nodejs
@@ -79,8 +86,7 @@ EXPOSE 3000
 # Set environment variables
 ENV NODE_ENV=production \
     PORT=3000 \
-    HOST=0.0.0.0 \
-    PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+    HOST=0.0.0.0
 
 # Use dumb-init to handle signals
 ENTRYPOINT ["dumb-init", "--"]
