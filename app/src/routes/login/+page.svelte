@@ -25,7 +25,7 @@
 			<div class="flex flex-col gap-3 mt-4">
 				<div class="flex items-center gap-3">
 					<div class="badge badge-success badge-sm">✓</div>
-					<span class="text-base-content/70">Powiadomienia na email z rejestracji</span>
+					<span class="text-base-content/70">Powiadomienia na email</span>
 				</div>
 				<div class="flex items-center gap-3">
 					<div class="badge badge-success badge-sm">✓</div>
@@ -41,14 +41,14 @@
 		<!-- Form Section -->
 		<div class="card w-full max-w-md shrink-0 bg-base-100 shadow-2xl lg:w-1/2">
 			<div class="card-body">
-				<!-- Tabs -->
-				<div class="tabs tabs-boxed mb-4">
-					<button
-						type="button"
-						class="tab flex-1"
-						class:tab-active={activeAction === 'login'}
-						onclick={() => (activeAction = 'login')}
-					>
+			<!-- Tabs -->
+			<div class="tabs tabs-boxed mb-4 w-full">
+				<button
+					type="button"
+					class="tab flex-1"
+					class:tab-active={activeAction === 'login'}
+					onclick={() => (activeAction = 'login')}
+				>
 						<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
 						</svg>
@@ -131,12 +131,12 @@
 						</div>
 					{/if}
 
-					<!-- Email Field -->
-					<div class="form-control">
-						<label class="label" for="email">
-							<span class="label-text font-semibold">Email</span>
-						</label>
-						<label class="input input-bordered flex items-center gap-2">
+				<!-- Email Field -->
+				<div class="form-control w-full">
+					<label class="label" for="email">
+						<span class="label-text font-semibold">Email</span>
+					</label>
+					<label class="input input-bordered flex items-center gap-2 w-full">
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
 								viewBox="0 0 16 16"
@@ -162,12 +162,12 @@
 						</label>
 					</div>
 
-					<!-- Password Field -->
-					<div class="form-control mt-4">
-						<label class="label" for="password">
-							<span class="label-text font-semibold">Hasło</span>
-						</label>
-						<label class="input input-bordered flex items-center gap-2">
+				<!-- Password Field -->
+				<div class="form-control w-full mt-4">
+					<label class="label" for="password">
+						<span class="label-text font-semibold">Hasło</span>
+					</label>
+					<label class="input input-bordered flex items-center gap-2 w-full">
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
 								viewBox="0 0 16 16"
@@ -205,9 +205,9 @@
 						{/if}
 					</div>
 
-					<!-- Submit Button -->
-					<div class="form-control mt-6">
-						<button type="submit" class="btn btn-primary" disabled={isLoading}>
+				<!-- Submit Button -->
+				<div class="form-control w-full mt-6">
+					<button type="submit" class="btn btn-primary w-full" disabled={isLoading}>
 							{#if isLoading}
 								<span class="loading loading-spinner"></span>
 								Przetwarzanie...
