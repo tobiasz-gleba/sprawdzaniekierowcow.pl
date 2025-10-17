@@ -1,7 +1,7 @@
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
-import { validateDriverStatus } from './driverLicenceValidator';
+import { validateDriverStatus, validateDriverStatusWithData } from './driverLicenceValidator';
 
 /**
  * Background validation service for driver licenses
@@ -28,21 +28,37 @@ async function validateSingleDriver(driverId: number): Promise<void> {
 
 		const driver = drivers[0];
 
-		// Validate the driver license
-		const isValid = await validateDriverStatus(
+		// Validate the driver license and get full data
+		const validationResult = await validateDriverStatusWithData(
 			driver.name,
 			driver.surname,
 			driver.documentSerialNumber
 		);
 
-		// Update the driver's status
+		// Get existing verification history or create new array
+		const existingHistory = (driver.verificationHistory as any[]) || [];
+		
+		// Add new verification result to history
+		const updatedHistory = [
+			...existingHistory,
+			{
+				timestamp: validationResult.timestamp,
+				isValid: validationResult.isValid,
+				data: validationResult.data
+			}
+		];
+
+		// Update the driver's status and verification history
 		await db
 			.update(table.driver)
-			.set({ status: isValid ? 1 : 0 })
+			.set({ 
+				status: validationResult.isValid ? 1 : 0,
+				verificationHistory: updatedHistory
+			})
 			.where(eq(table.driver.id, driverId));
 
 		console.log(
-			`Driver ${driverId} (${driver.name} ${driver.surname}) validated: ${isValid ? 'VALID' : 'INVALID'}`
+			`Driver ${driverId} (${driver.name} ${driver.surname}) validated: ${validationResult.isValid ? 'VALID' : 'INVALID'}`
 		);
 	} catch (error) {
 		console.error(`Error validating driver ${driverId}:`, error);
@@ -110,20 +126,36 @@ export async function revalidateDriver(driverId: number): Promise<boolean> {
 		// Set status to pending
 		await db.update(table.driver).set({ status: 2 }).where(eq(table.driver.id, driverId));
 
-		// Validate the driver license
-		const isValid = await validateDriverStatus(
+		// Validate the driver license and get full data
+		const validationResult = await validateDriverStatusWithData(
 			driver.name,
 			driver.surname,
 			driver.documentSerialNumber
 		);
 
-		// Update the driver's status
+		// Get existing verification history or create new array
+		const existingHistory = (driver.verificationHistory as any[]) || [];
+		
+		// Add new verification result to history
+		const updatedHistory = [
+			...existingHistory,
+			{
+				timestamp: validationResult.timestamp,
+				isValid: validationResult.isValid,
+				data: validationResult.data
+			}
+		];
+
+		// Update the driver's status and verification history
 		await db
 			.update(table.driver)
-			.set({ status: isValid ? 1 : 0 })
+			.set({ 
+				status: validationResult.isValid ? 1 : 0,
+				verificationHistory: updatedHistory
+			})
 			.where(eq(table.driver.id, driverId));
 
-		return isValid;
+		return validationResult.isValid;
 	} catch (error) {
 		console.error(`Error re-validating driver ${driverId}:`, error);
 		// Mark as invalid on error

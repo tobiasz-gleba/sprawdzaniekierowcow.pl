@@ -6,7 +6,7 @@ import { chromium, type Browser } from 'playwright';
  * 
  * @param name - Driver's first name
  * @param surname - Driver's surname
- * @param documentNumber - Document serial number (e.g., "AA004967")
+ * @param documentNumber - Document serial number (e.g., "AA004547")
  * @returns Promise<any> - Raw JSON response from the government API or null if error
  */
 export async function checkDriverLicence(
@@ -118,6 +118,66 @@ export async function validateDriverStatus(
 	} catch (error) {
 		console.error('Error validating driver status:', error);
 		return false;
+	}
+}
+
+/**
+ * Validates driver status and returns full result including JSON data
+ * 
+ * @param name - Driver's first name
+ * @param surname - Driver's surname
+ * @param documentNumber - Document serial number
+ * @returns Promise with validation result and full JSON data
+ */
+export async function validateDriverStatusWithData(
+	name: string,
+	surname: string,
+	documentNumber: string
+): Promise<{ isValid: boolean; data: any; timestamp: string }> {
+	const timestamp = new Date().toISOString();
+	
+	try {
+		// Get the driver license data
+		const data = await checkDriverLicence(name, surname, documentNumber);
+
+		if (!data || !data.dokumentPotwierdzajacyUprawnienia) {
+			return { 
+				isValid: false, 
+				data: data || { error: 'No data returned' }, 
+				timestamp 
+			};
+		}
+
+		const document = data.dokumentPotwierdzajacyUprawnienia;
+
+		// Check document status - must be "Wydany" (Issued)
+		const status = document.stanDokumentu?.stanDokumentu?.wartosc;
+		if (status !== 'Wydany') {
+			return { isValid: false, data, timestamp };
+		}
+
+		// Check if document has expired
+		const expiryDate = document.dataWaznosci; // Format: YYYY-MM-DD
+		if (expiryDate) {
+			const expiry = new Date(expiryDate);
+			const today = new Date();
+			today.setHours(0, 0, 0, 0); // Reset time to start of day for accurate comparison
+
+			if (expiry < today) {
+				return { isValid: false, data, timestamp };
+			}
+		}
+
+		// All checks passed
+		return { isValid: true, data, timestamp };
+
+	} catch (error) {
+		console.error('Error validating driver status:', error);
+		return { 
+			isValid: false, 
+			data: { error: String(error) }, 
+			timestamp 
+		};
 	}
 }
 

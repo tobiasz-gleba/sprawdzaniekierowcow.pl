@@ -1,4 +1,4 @@
-import { mysqlTable, serial, int, varchar, datetime, boolean } from 'drizzle-orm/mysql-core';
+import { mysqlTable, serial, int, varchar, datetime, boolean, json } from 'drizzle-orm/mysql-core';
 
 export const user = mysqlTable('user', {
 	id: varchar('id', { length: 255 }).primaryKey(),
@@ -25,7 +25,8 @@ export const driver = mysqlTable('driver', {
 	userId: varchar('user_id', { length: 255 })
 		.notNull()
 		.references(() => user.id),
-	createdAt: datetime('created_at').notNull()
+	createdAt: datetime('created_at').notNull(),
+	verificationHistory: json('verification_history')
 });
 
 export const emailVerificationToken = mysqlTable('email_verification_token', {
