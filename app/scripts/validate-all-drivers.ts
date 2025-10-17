@@ -1,4 +1,4 @@
-#!/usr/bin/env tsx
+#!/usr/bin/env bun
 /**
  * CLI tool to validate all drivers in the database
  * 
@@ -14,10 +14,21 @@
  *   --dry-run          Show what would be validated without actually validating
  */
 
-import { db } from '../src/lib/server/db/index.js';
+import { drizzle } from 'drizzle-orm/mysql2';
+import mysql from 'mysql2/promise';
 import * as table from '../src/lib/server/db/schema.js';
 import { eq } from 'drizzle-orm';
 import { validateDriverStatus } from '../src/lib/server/driverLicenceValidator.js';
+
+// Create standalone database connection
+const DB_HOST = process.env.DB_HOST || 'localhost';
+const DB_NAME = process.env.DB_NAME || 'sprawdzaniekierowcow';
+const DB_USERNAME = process.env.DB_USERNAME || 'root';
+const DB_PASSWORD = process.env.DB_PASSWORD || 'password';
+
+const connectionString = `mysql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}/${DB_NAME}`;
+const client = mysql.createPool(connectionString);
+const db = drizzle(client, { schema: table, mode: 'default' });
 
 interface CliOptions {
 	userId?: string;
@@ -104,6 +115,7 @@ async function main() {
 
 	if (drivers.length === 0) {
 		console.log('✨ No drivers found. Nothing to do!');
+		await client.end();
 		process.exit(0);
 	}
 
@@ -115,6 +127,7 @@ async function main() {
 			);
 		});
 		console.log('\n✅ Dry run complete. Use without --dry-run to actually validate.');
+		await client.end();
 		process.exit(0);
 	}
 
@@ -128,10 +141,16 @@ async function main() {
 	for (let i = 0; i < drivers.length; i++) {
 		const driver = drivers[i];
 		const progress = `[${i + 1}/${drivers.length}]`;
+		const timestamp = new Date().toISOString();
+		const startTime = Date.now();
 
 		console.log(
 			`${progress} Validating: ${driver.name} ${driver.surname} (${driver.documentSerialNumber})...`
 		);
+		console.log(`  ├─ Driver ID: ${driver.id}`);
+		console.log(`  ├─ User ID: ${driver.userId}`);
+		console.log(`  ├─ Current Status: ${formatStatus(driver.status)}`);
+		console.log(`  ├─ Started at: ${timestamp}`);
 
 		try {
 			// Set status to pending
@@ -139,6 +158,7 @@ async function main() {
 				.update(table.driver)
 				.set({ status: 2 })
 				.where(eq(table.driver.id, driver.id));
+			console.log(`  ├─ Status set to PENDING`);
 
 			// Validate the driver
 			const isValid = await validateDriverStatus(
@@ -146,6 +166,7 @@ async function main() {
 				driver.surname,
 				driver.documentSerialNumber
 			);
+			console.log(`  ├─ Validation result: ${isValid ? 'VALID' : 'INVALID'}`);
 
 			// Update status based on validation result
 			const newStatus = isValid ? 1 : 0;
@@ -154,17 +175,23 @@ async function main() {
 				.set({ status: newStatus })
 				.where(eq(table.driver.id, driver.id));
 
+			const duration = Date.now() - startTime;
+			console.log(`  ├─ Status updated to: ${formatStatus(newStatus)}`);
+			console.log(`  └─ Duration: ${duration}ms`);
+
 			if (isValid) {
 				validCount++;
-				console.log(`${progress} ✅ VALID - ${driver.name} ${driver.surname}`);
+				console.log(`${progress} ✅ VALID - ${driver.name} ${driver.surname}\n`);
 			} else {
 				invalidCount++;
-				console.log(`${progress} ❌ INVALID - ${driver.name} ${driver.surname}`);
+				console.log(`${progress} ❌ INVALID - ${driver.name} ${driver.surname}\n`);
 			}
 		} catch (error) {
 			errorCount++;
+			const duration = Date.now() - startTime;
+			console.error(`  ├─ Validation failed after ${duration}ms`);
 			console.error(`${progress} ⚠️  ERROR - ${driver.name} ${driver.surname}`);
-			console.error(`  ${error instanceof Error ? error.message : String(error)}`);
+			console.error(`  └─ Error: ${error instanceof Error ? error.message : String(error)}\n`);
 
 			// Mark as invalid on error
 			try {
@@ -193,6 +220,9 @@ async function main() {
 	console.log(`⚠️  Errors: ${errorCount}`);
 	console.log('='.repeat(60));
 	console.log('\n✨ Validation complete!');
+
+	// Close database connection
+	await client.end();
 }
 
 // Run the CLI
