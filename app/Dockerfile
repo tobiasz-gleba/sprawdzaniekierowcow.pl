@@ -46,7 +46,9 @@ RUN apt-get update && \
 
 # Create non-root user early
 RUN groupadd -g 1001 nodejs && \
-    useradd -r -u 1001 -g nodejs nodejs
+    useradd -r -u 1001 -g nodejs nodejs && \
+    mkdir -p /home/nodejs/.npm/_logs && \
+    chown -R nodejs:nodejs /home/nodejs
 
 # Copy built application and node_modules from builder
 COPY --from=builder /app/build ./build

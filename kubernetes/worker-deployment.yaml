@@ -20,8 +20,8 @@ spec:
       restartPolicy: Always
       containers:
         - name: worker
-          image: ghcr.io/tobiasz-gleba/sprawdzaniekierowcow.pl:20251023165625 # {"$imagepolicy": "sprawdzaniekierowcow:sprawdzaniekierowcow"}
-          command: ['npm', 'run', 'worker:validate']
+          image: ghcr.io/tobiasz-gleba/sprawdzaniekierowcow.pl:20251023153843 # {"$imagepolicy": "sprawdzaniekierowcow:sprawdzaniekierowcow"}
+          command: ['tsx', 'scripts/validation-worker.ts']
           workingDir: /app
           env:
             - name: DB_HOST
@@ -42,6 +42,8 @@ spec:
               value: '2000' # 2 seconds between validations
             - name: NODE_ENV
               value: 'production'
+            - name: NPM_CONFIG_LOGLEVEL
+              value: 'error'
           resources:
             limits:
               memory: '2Gi'
@@ -54,8 +56,18 @@ spec:
               command:
                 - sh
                 - -c
-                - 'ps aux | grep -v grep | grep "validation-worker" || exit 1'
-            initialDelaySeconds: 30
-            periodSeconds: 60
-            timeoutSeconds: 5
+                - 'pgrep -f "validation-worker" > /dev/null'
+            initialDelaySeconds: 60
+            periodSeconds: 120
+            timeoutSeconds: 10
             failureThreshold: 3
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - 'pgrep -f "validation-worker" > /dev/null'
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 2
