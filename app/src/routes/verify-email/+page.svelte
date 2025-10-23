@@ -5,7 +5,7 @@
 	let { data }: { data: PageData } = $props();
 </script>
 
-<SEO 
+<SEO
 	title="Weryfikacja emaila - Sprawdzanie Kierowców"
 	description="Weryfikacja adresu email w systemie sprawdzania kierowców."
 	noindex={true}

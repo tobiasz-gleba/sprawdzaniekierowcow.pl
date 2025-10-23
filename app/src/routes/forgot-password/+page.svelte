@@ -7,7 +7,7 @@
 	let isLoading = $state(false);
 </script>
 
-<SEO 
+<SEO
 	title="Zapomniałeś hasła? - Sprawdzanie Kierowców"
 	description="Zresetuj hasło do systemu sprawdzania kierowców. Wyślemy Ci link do ustawienia nowego hasła."
 	noindex={true}

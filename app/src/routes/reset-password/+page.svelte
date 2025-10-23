@@ -12,7 +12,7 @@
 	let passwordValid = $derived(password.length >= 6);
 </script>
 
-<SEO 
+<SEO
 	title="Resetuj hasło - Sprawdzanie Kierowców"
 	description="Ustaw nowe hasło dla swojego konta w systemie sprawdzania kierowców."
 	noindex={true}

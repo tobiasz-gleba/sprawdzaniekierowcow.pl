@@ -3,7 +3,7 @@
 	import SEO from '$lib/components/SEO.svelte';
 </script>
 
-<SEO 
+<SEO
 	title="Warunki Użytkowania - Sprawdzanie Kierowców"
 	description="Warunki Użytkowania dla sprawdzaniekierowcow.pl - regulamin korzystania z systemu weryfikacji praw jazdy kierowców."
 	keywords="regulamin, warunki użytkowania, terms of service"

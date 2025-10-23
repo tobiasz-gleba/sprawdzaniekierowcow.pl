@@ -15,7 +15,7 @@
 	});
 </script>
 
-<SEO 
+<SEO
 	title="Sprawdzanie Kierowców - Darmowe monitorowanie uprawnień kierowców"
 	description="Darmowa aplikacja do monitorowania uprawnień kierowców. Automatyczne sprawdzanie statusu praw jazdy w Centralnej Ewidencji Kierowców (CEK). Otrzymuj powiadomienia o zmianach statusu uprawnień. System dla firm transportowych i zarządców flot."
 	keywords="sprawdzanie kierowców, uprawnienia kierowców, prawo jazdy, monitoring kierowców, CEK, Centralna Ewidencja Kierowców, weryfikacja kierowców, flota pojazdów, firma transportowa, powiadomienia kierowcy"

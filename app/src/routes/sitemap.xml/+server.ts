@@ -2,7 +2,7 @@ import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async () => {
 	const siteUrl = 'https://sprawdzaniekierowcow.pl';
-	
+
 	// Define all public pages
 	const pages = [
 		{ url: '', priority: '1.0', changefreq: 'daily' }, // Homepage
@@ -36,4 +36,3 @@ ${pages
 		}
 	});
 };
-

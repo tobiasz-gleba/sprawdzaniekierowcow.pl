@@ -9,7 +9,11 @@
 			<div class="container mx-auto max-w-7xl px-4">
 				<!-- Image Container -->
 				<figure class="mb-16 flex justify-center">
-					<a href="/login" class="block cursor-pointer transition-transform hover:scale-[1.02]" aria-label="Zobacz panel sprawdzania kierowców">
+					<a
+						href="/login"
+						class="block cursor-pointer transition-transform hover:scale-[1.02]"
+						aria-label="Zobacz panel sprawdzania kierowców"
+					>
 						<img
 							src="/Screenshot.png"
 							alt="Panel monitorowania uprawnień kierowców - przejrzysty dashboard z listą kierowców i ich statusami"
@@ -44,12 +48,17 @@
 								Centralnej Ewidencji Kierowców
 							</a>, informacje o prawie jazdy są dostępne dla wszystkich.
 							<br />
-							W naszym panelu administracyjnym, możesz monitorować oraz otrzymywać <strong>powiadomienia</strong> w
-							razie zmiany statusu (odebrania, wygaśnięcia) uprawnienia do prowadzenia pojazdów Twojego pracownika.
+							W naszym panelu administracyjnym, możesz monitorować oraz otrzymywać
+							<strong>powiadomienia</strong> w razie zmiany statusu (odebrania, wygaśnięcia) uprawnienia
+							do prowadzenia pojazdów Twojego pracownika.
 						</p>
 
 						<div>
-							<a href="/login" class="btn gap-2 btn-lg btn-primary" aria-label="Zacznij korzystać - przejdź do logowania">
+							<a
+								href="/login"
+								class="btn gap-2 btn-lg btn-primary"
+								aria-label="Zacznij korzystać - przejdź do logowania"
+							>
 								Ustaw powiadomienia w 2 minuty
 								<svg
 									xmlns="http://www.w3.org/2000/svg"

@@ -64,7 +64,7 @@
 	});
 </script>
 
-<SEO 
+<SEO
 	title="Dashboard - Sprawdzanie Kierowców"
 	description="Panel zarządzania kierowcami - monitoruj uprawnienia, dodawaj kierowców i otrzymuj powiadomienia o zmianach statusu praw jazdy."
 	noindex={true}

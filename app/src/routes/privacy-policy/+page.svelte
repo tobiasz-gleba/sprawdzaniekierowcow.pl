@@ -3,7 +3,7 @@
 	import SEO from '$lib/components/SEO.svelte';
 </script>
 
-<SEO 
+<SEO
 	title="Polityka Prywatności - Sprawdzanie Kierowców"
 	description="Polityka Prywatności dla sprawdzaniekierowcow.pl - jak zbieramy, przechowujemy i chronimy Twoje dane osobowe w systemie weryfikacji praw jazdy."
 	keywords="polityka prywatności, RODO, ochrona danych, prywatność, bezpieczeństwo danych"

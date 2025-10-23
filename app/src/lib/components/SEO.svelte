@@ -22,7 +22,9 @@
 	}: Props = $props();
 
 	const siteUrl = 'https://sprawdzaniekierowcow.pl';
-	const fullTitle = title.includes('Sprawdzanie Kierowców') ? title : `${title} | Sprawdzanie Kierowców`;
+	const fullTitle = title.includes('Sprawdzanie Kierowców')
+		? title
+		: `${title} | Sprawdzanie Kierowców`;
 	const fullImageUrl = image.startsWith('http') ? image : `${siteUrl}${image}`;
 	const canonicalUrl = canonical || `${siteUrl}${$page.url.pathname}`;
 </script>
@@ -33,13 +35,13 @@
 	<meta name="title" content={fullTitle} />
 	<meta name="description" content={description} />
 	<meta name="keywords" content={keywords} />
-	
+
 	{#if noindex}
 		<meta name="robots" content="noindex, nofollow" />
 	{:else}
 		<meta name="robots" content="index, follow" />
 	{/if}
-	
+
 	<link rel="canonical" href={canonicalUrl} />
 
 	<!-- Open Graph / Facebook -->
@@ -62,4 +64,3 @@
 	<meta name="author" content="Sprawdzanie Kierowców" />
 	<meta name="language" content="Polish" />
 </svelte:head>
-

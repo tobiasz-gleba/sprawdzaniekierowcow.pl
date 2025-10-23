@@ -13,7 +13,8 @@
 		name: 'Sprawdzanie Kierowców',
 		url: 'https://sprawdzaniekierowcow.pl',
 		logo: 'https://sprawdzaniekierowcow.pl/Screenshot.png',
-		description: 'Darmowa aplikacja do monitorowania uprawnień kierowców i sprawdzania statusu praw jazdy w Centralnej Ewidencji Kierowców',
+		description:
+			'Darmowa aplikacja do monitorowania uprawnień kierowców i sprawdzania statusu praw jazdy w Centralnej Ewidencji Kierowców',
 		address: {
 			'@type': 'PostalAddress',
 			addressCountry: 'PL'
@@ -26,7 +27,8 @@
 		'@type': 'WebSite',
 		name: 'Sprawdzanie Kierowców',
 		url: 'https://sprawdzaniekierowcow.pl',
-		description: 'Darmowe monitorowanie uprawnień kierowców i automatyczne powiadomienia o zmianach statusu',
+		description:
+			'Darmowe monitorowanie uprawnień kierowców i automatyczne powiadomienia o zmianach statusu',
 		potentialAction: {
 			'@type': 'SearchAction',
 			target: 'https://sprawdzaniekierowcow.pl/dashboard?search={search_term_string}',

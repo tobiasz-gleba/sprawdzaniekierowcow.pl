@@ -27,8 +27,12 @@
 		<h2 class="footer-title">POMOC</h2>
 		<ul class="flex flex-col gap-2" role="list">
 			<li>
-				<a href="https://github.com/tobiasz-gleba/sprawdzaniekierowcow.pl" class="link link-hover" target="_blank" rel="noopener noreferrer" aria-label="Otwórz repozytorium GitHub w nowym oknie"
-					>GitHub</a
+				<a
+					href="https://github.com/tobiasz-gleba/sprawdzaniekierowcow.pl"
+					class="link link-hover"
+					target="_blank"
+					rel="noopener noreferrer"
+					aria-label="Otwórz repozytorium GitHub w nowym oknie">GitHub</a
 				>
 			</li>
 			<li>
@@ -38,7 +42,11 @@
 				<a href="/terms-of-service" class="link link-hover">Warunki użytkowania</a>
 			</li>
 			<li>
-				<a href="mailto:contact@sprawdzaniekierowcow.pl" class="link link-hover" aria-label="Wyślij email na adres kontaktowy">Kontakt</a>
+				<a
+					href="mailto:contact@sprawdzaniekierowcow.pl"
+					class="link link-hover"
+					aria-label="Wyślij email na adres kontaktowy">Kontakt</a
+				>
 			</li>
 		</ul>
 	</nav>

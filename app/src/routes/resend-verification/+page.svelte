@@ -7,7 +7,7 @@
 	let isLoading = $state(false);
 </script>
 
-<SEO 
+<SEO
 	title="Wyślij ponownie email weryfikacyjny - Sprawdzanie Kierowców"
 	description="Nie otrzymałeś emaila weryfikacyjnego? Wyślemy Ci nowy link weryfikacyjny."
 	noindex={true}

@@ -12,7 +12,7 @@
 	let activeAction: 'login' | 'register' = $state('login');
 </script>
 
-<SEO 
+<SEO
 	title="Logowanie - Sprawdzanie Kierowców"
 	description="Zaloguj się lub utwórz konto w systemie sprawdzania kierowców. Otrzymuj powiadomienia o zmianach statusu uprawnień kierowców."
 	noindex={true}
