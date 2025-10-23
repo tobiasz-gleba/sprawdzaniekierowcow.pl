@@ -28,8 +28,40 @@ Projekt został udostępniony jako open source.
 - 📥 **Import masowy** - Importuj dane wielu kierowców jednocześnie
 - 🔐 **Bezpieczna autentykacja** - System rejestracji i logowania z weryfikacją email
 - 🔔 **Powiadomienia** - Alerty o zmianach statusu uprawnień
+- ⚙️ **Automatyczna walidacja** - Background workers dla ciągłego monitoringu
+- 📝 **CLI Scripts** - Narzędzia do masowej walidacji i zarządzania
+
 ### Stack Technologiczny
 
+**Frontend:**
+- SvelteKit - Framework aplikacji webowej
+- Tailwind CSS + DaisyUI - Stylowanie i komponenty UI
+- TypeScript - Typowanie statyczne
+
+**Backend:**
+- Node.js - Środowisko uruchomieniowe
+- MySQL 8+ - Baza danych
+- Drizzle ORM - Zarządzanie bazą danych
+- Lucia Auth - Autentykacja użytkowników
+- Nodemailer - Wysyłka emaili
+
+**Automatyzacja:**
+- Playwright - Automatyczna walidacja uprawnień
+- Background Workers - Ciągłe sprawdzanie w tle
+- Kubernetes CronJobs - Zaplanowane zadania
+
+**Deployment:**
+- Docker & Docker Compose - Konteneryzacja
+- Kubernetes - Orkiestracja dla środowisk produkcyjnych
+- FluxCD ready - Automatyczne wdrożenia
+
+### Architektura
+
+Aplikacja składa się z trzech głównych komponentów:
+
+1. **Web Application** - Interfejs użytkownika (SvelteKit)
+2. **Validation Workers** - Background procesy do automatycznej walidacji
+3. **Scheduled Jobs** - CronJobs dla okresowych zadań (walidacja, notyfikacje)
 
 #### Wymagania
 
@@ -151,18 +183,187 @@ docker compose -f docker-compose.prod.yml logs db-migrate
 - Baza danych MySQL nie jest wystawiana na zewnątrz - aplikacja łączy się przez wewnętrzną sieć Docker
 - Jeśli port 3001 jest zajęty, zmień mapowanie w `docker-compose.prod.yml` (np. `3002:3000`)
 
+#### Kubernetes Deployment
+
+Dla środowisk produkcyjnych projekt zawiera pełną konfigurację Kubernetes z obsługą FluxCD.
+
+**Struktura deploymentu:**
+
+```bash
+kubernetes/
+├── deployment.yaml         # Główna aplikacja webowa
+├── worker-deployment.yaml  # Background workers dla walidacji
+├── cron.yaml              # CronJobs (walidacja, notyfikacje)
+├── mysql.yaml             # Baza danych MySQL
+├── fluxcd.yaml            # Konfiguracja HelmRelease dla FluxCD
+└── kustomization.yaml     # Kustomize config
+```
+
+**Deployment z kubectl:**
+
+```bash
+# Z katalogu głównego repozytorium
+kubectl apply -k kubernetes/
+
+# Sprawdź status
+kubectl get pods
+kubectl get cronjobs
+```
+
+**Komponenty:**
+
+1. **App Deployment** - Główna aplikacja (3 repliki dla HA)
+2. **Worker Deployment** - Background workers (1-2 repliki)
+3. **CronJobs:**
+   - Walidacja kierowców oznaczonych do sprawdzenia (co 30 min)
+   - Walidacja wszystkich kierowców (codziennie o 2:00)
+   - Wysyłka notyfikacji o nieważnych prawach (codziennie o 8:00)
+
+**Wymagane sekrety Kubernetes:**
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: sprawdzaniekierowcow-secrets
+type: Opaque
+stringData:
+  DB_PASSWORD: "your-db-password"
+  EMAIL_USER: "your-email@example.com"
+  EMAIL_PASS: "your-email-password"
+  SMTP_HOST: "smtp.gmail.com"
+  SMTP_PORT: "587"
+  PUBLIC_BASE_URL: "https://sprawdzaniekierowcow.pl"
+```
+
+**Monitoring i logi:**
+
+```bash
+# Logi aplikacji
+kubectl logs -f deployment/sprawdzaniekierowcow-app
+
+# Logi workers
+kubectl logs -f deployment/sprawdzaniekierowcow-worker
+
+# Status CronJobs
+kubectl get cronjobs
+kubectl logs job/validate-marked-drivers-<job-id>
+```
+
+### CLI Scripts
+
+Aplikacja zawiera zestaw skryptów CLI do zarządzania walidacją kierowców i notyfikacjami. Szczegółowa dokumentacja dostępna w `app/scripts/README.md`.
+
+#### Walidacja wszystkich kierowców
+
+```bash
+cd app/
+
+# Waliduj wszystkich kierowców
+npm run validate:all
+
+# Waliduj tylko kierowców ze statusem "pending"
+npm run validate:pending
+
+# Waliduj kierowców konkretnego użytkownika
+bun run scripts/validate-all-drivers.ts --user-id <user-id>
+
+# Dry run (bez faktycznej walidacji)
+bun run scripts/validate-all-drivers.ts --dry-run
+
+# Z dodatkową współbieżnością (maks. 3)
+bun run scripts/validate-all-drivers.ts --concurrency 2
+```
+
+#### Oznaczanie kierowców do walidacji
+
+```bash
+# Oznacz wszystkich kierowców jako wymagających walidacji
+npm run mark:all
+```
+
+#### Wysyłka powiadomień
+
+```bash
+# Wyślij powiadomienia do wszystkich użytkowników z nieważnymi prawami
+npm run notify:invalid
+
+# Tylko dla konkretnego użytkownika
+bun run scripts/notify-invalid-drivers.ts --user-id <user-id>
+
+# Dry run (bez wysyłki emaili)
+bun run scripts/notify-invalid-drivers.ts --dry-run
+```
+
+#### Background Worker
+
+```bash
+# Uruchom worker walidacji (ciągłe przetwarzanie)
+npm run worker:validate
+```
+
+**Uwagi o wydajności:**
+- Skrypty używają browser poolingu dla optymalnego zużycia pamięci
+- Maksymalna współbieżność walidacji to 3 dla uniknięcia przeciążenia
+- Domyślne opóźnienie między walidacjami: 2000ms
+- Wymagana pamięć dla walidacji: min. 512Mi, zalecane 2Gi
+
 ### Dostępne komendy
+
+#### Podstawowe komendy deweloperskie
 
 ```bash
 npm run dev          # Uruchom serwer deweloperski
 npm run build        # Zbuduj aplikację
 npm run preview      # Podgląd wersji produkcyjnej
-npm run db:start     # Uruchom bazę danych (Docker)
-npm run db:push      # Zastosuj zmiany w schemacie
-npm run db:studio    # Otwórz Drizzle Studio
 npm run lint         # Sprawdź kod
 npm run format       # Formatuj kod
 ```
+
+#### Zarządzanie bazą danych
+
+```bash
+npm run db:start     # Uruchom bazę danych (Docker)
+npm run db:push      # Zastosuj zmiany w schemacie (development)
+npm run db:generate  # Generuj pliki migracji
+npm run db:migrate   # Wykonaj migracje
+npm run db:studio    # Otwórz Drizzle Studio
+```
+
+#### Skrypty walidacji i notyfikacji
+
+```bash
+npm run validate:all      # Waliduj wszystkich kierowców
+npm run validate:pending  # Waliduj tylko kierowców ze statusem "pending"
+npm run notify:invalid    # Wyślij powiadomienia o nieważnych prawach
+npm run mark:all          # Oznacz wszystkich kierowców do walidacji
+npm run worker:validate   # Uruchom background worker walidacji
+```
+
+### Automatyzacja
+
+System umożliwia automatyczne sprawdzanie kierowców na kilka sposobów:
+
+#### 1. Background Workers (Kubernetes)
+
+Workers działają w tle i ciągle przetwarzają kierowców oznaczonych do walidacji:
+
+```yaml
+# kubernetes/worker-deployment.yaml
+replicas: 1-2  # Skalowalne w zależności od obciążenia
+```
+
+#### 2. CronJobs (Kubernetes)
+
+Zaplanowane zadania wykonywane okresowo:
+
+- **Walidacja oznaczonych** - co 30 minut
+- **Walidacja wszystkich** - codziennie o 2:00
+- **Notyfikacje** - codziennie o 8:00
+
+#### 3. Manualne skrypty CLI
+
+Uruchamianie skryptów on-demand na serwerze lub lokalnie.
 
 ### Kontrybuowanie
 
@@ -189,4 +390,43 @@ Znalazłeś błąd? Otwórz issue na GitHubie z następującymi informacjami:
 - Oczekiwane zachowanie
 - Screenshots (jeśli dotyczy)
 - Informacje o środowisku (przeglądarka, system operacyjny)
+
+### Uwagi produkcyjne
+
+#### Bezpieczeństwo
+
+- Zmień domyślne hasła do bazy danych w `docker-compose.prod.yml`
+- Użyj silnych haseł dla kont email i bazy danych
+- W Kubernetes przechowuj dane uwierzytelniające w Secrets
+- Regularnie aktualizuj zależności: `npm audit` i `npm update`
+- W produkcji używaj HTTPS (skonfiguruj reverse proxy jak nginx/traefik)
+
+#### Wydajność
+
+- Workers wymagają co najmniej 512Mi RAM (zalecane 2Gi)
+- Główna aplikacja: min. 256Mi RAM
+- Dla dużych baz danych rozważ skalowanie workers (1-3 repliki)
+- Browser pooling redukuje zużycie pamięci o ~70%
+- Optymalne ustawienie współbieżności: 1-2 dla production
+
+#### Monitoring
+
+- Sprawdzaj logi workers: `kubectl logs -f deployment/sprawdzaniekierowcow-worker`
+- Monitoruj wykonanie CronJobs: `kubectl get cronjobs`
+- Śledź metryki bazy danych (połączenia, rozmiar)
+- Ustaw alerty dla nieudanych walidacji
+
+### Licencja
+
+Projekt udostępniony na licencji MIT. Zobacz plik `LICENSE` dla szczegółów.
+
+### Kontakt
+
+Dla pytań i sugestii:
+- Otwórz issue na GitHubie
+- Zobacz `SECURITY_AUDIT_PLAN.md` dla kwestii bezpieczeństwa
+
+---
+
+**sprawdzaniekierowcow.pl** - Open source narzędzie do monitorowania uprawnień kierowców 🚛
 
