@@ -92,34 +92,6 @@ spec:
           requests:
             memory: "256Mi"
             cpu: "250m"
-      - name: validation-worker
-        image: ghcr.io/tobiasz-gleba/sprawdzaniekierowcow.pl:20251023141819 # {"$imagepolicy": "sprawdzaniekierowcow:sprawdzaniekierowcow"}
-        command: ["npm", "run", "worker:validate"]
-        workingDir: /app
-        env:
-        - name: DB_HOST
-          value: mysql.sprawdzaniekierowcow.svc.cluster.local
-        - name: DB_USERNAME
-          value: sprawdzaniekierowcow
-        - name: DB_NAME
-          value: sprawdzaniekierowcow
-        - name: DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: github-settings
-              key: SHARED_DB_PASSWORD
-              optional: false
-        - name: WORKER_POLL_INTERVAL
-          value: "3000"
-        - name: WORKER_DELAY
-          value: "2000"
-        resources:
-          limits:
-            memory: "2Gi"
-            cpu: "1000m"
-          requests:
-            memory: "512Mi"
-            cpu: "250m"
 ---
 apiVersion: v1
 kind: Service
