@@ -35,9 +35,9 @@
 	<div class="card-body">
 		<h2 class="card-title">Importuj Kierowców z CSV</h2>
 		<p class="mb-4 text-sm text-base-content/70">
-			Prześlij plik CSV z kolumnami: <strong>Imię, Nazwisko, Numer Seryjny Dokumentu, Status</strong>
+			Prześlij plik CSV z kolumnami: <strong>Imię, Nazwisko, Numer Seryjny Dokumentu</strong>
 			<br />
-			<span class="text-xs text-base-content/60">(Kolumna Status jest opcjonalna - możesz użyć wyeksportowanego pliku CSV)</span>
+			<span class="text-xs text-base-content/60">(Możesz użyć wyeksportowanego pliku CSV)</span>
 		</p>
 
 		<form

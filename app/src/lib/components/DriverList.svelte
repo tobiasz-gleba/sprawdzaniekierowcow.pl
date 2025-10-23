@@ -50,17 +50,15 @@
 
 		try {
 			// Create CSV header
-			const headers = ['Imię', 'Nazwisko', 'Numer Seryjny Dokumentu', 'Status'];
+			const headers = ['Imię', 'Nazwisko', 'Numer Seryjny Dokumentu'];
 			const csvRows = [headers.join(',')];
 
 			// Add driver data
 			drivers.forEach((driver) => {
-				const statusText = driver.status === 1 ? 'Ważne' : driver.status === 2 ? 'W trakcie weryfikacji' : 'Nieważne';
 				const row = [
 					driver.name,
 					driver.surname,
-					driver.documentSerialNumber,
-					statusText
+					driver.documentSerialNumber
 				];
 				// Escape fields that might contain commas
 				const escapedRow = row.map((field) => `"${field}"`);

@@ -131,11 +131,6 @@
 						<p class="mt-2">
 							<strong>Dla maksymalnego bezpieczeństwa:</strong> Pobierz kod źródłowy z naszego repozytorium GitHub i wdróż go na własnych serwerach, gdzie masz pełną kontrolę nad dostępem do danych i bezpieczeństwem.
 						</p>
-						<p class="mt-2">
-							<strong>Repozytorium GitHub:</strong> <a href="https://github.com" class="link link-primary" target="_blank" rel="noopener">
-								https://github.com (link do Twojego repozytorium)
-							</a>
-						</p>
 					</section>
 
 					<section class="mb-6">
