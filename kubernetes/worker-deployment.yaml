@@ -20,7 +20,7 @@ spec:
       restartPolicy: Always
       containers:
         - name: worker
-          image: ghcr.io/tobiasz-gleba/sprawdzaniekierowcow.pl:20251023153843 # {"$imagepolicy": "sprawdzaniekierowcow:sprawdzaniekierowcow"}
+          image: ghcr.io/tobiasz-gleba/sprawdzaniekierowcow.pl:20251023165625 # {"$imagepolicy": "sprawdzaniekierowcow:sprawdzaniekierowcow"}
           command: ['npm', 'run', 'worker:validate']
           workingDir: /app
           env:
