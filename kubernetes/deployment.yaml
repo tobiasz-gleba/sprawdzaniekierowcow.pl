@@ -83,10 +83,8 @@ spec:
           value: smtp.iq.pl
         - name: SMTP_PORT
           value: "587"
-        - name: DEBUG
-          value: "*"
-        - name: LOG_LEVEL
-          value: "debug"
+        - name: NODE_ENV
+          value: "production"
         resources:
           limits:
             memory: "1024Mi"

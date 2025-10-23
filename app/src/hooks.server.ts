@@ -37,25 +37,30 @@ export const handle: Handle = handleAuth;
 export const handleError: HandleServerError = async ({ error, event, status, message }) => {
 	const errorId = crypto.randomUUID();
 	
-	// Log the error with full details
-	console.error('='.repeat(80));
-	console.error(`[ERROR ${errorId}] ${new Date().toISOString()}`);
-	console.error(`Status: ${status}`);
-	console.error(`Message: ${message}`);
-	console.error(`Path: ${event.url.pathname}`);
-	console.error(`Method: ${event.request.method}`);
-	console.error(`User: ${event.locals.user?.id || 'Not authenticated'}`);
-	console.error('Headers:', Object.fromEntries(event.request.headers.entries()));
-	
-	if (error instanceof Error) {
-		console.error('Error name:', error.name);
-		console.error('Error message:', error.message);
-		console.error('Stack trace:', error.stack);
+	// Log minimal error info in production, detailed in development
+	if (process.env.NODE_ENV === 'production') {
+		console.error(`[ERROR ${errorId}] ${status} - ${event.url.pathname}`);
 	} else {
-		console.error('Error object:', error);
+		// Log the error with full details in development
+		console.error('='.repeat(80));
+		console.error(`[ERROR ${errorId}] ${new Date().toISOString()}`);
+		console.error(`Status: ${status}`);
+		console.error(`Message: ${message}`);
+		console.error(`Path: ${event.url.pathname}`);
+		console.error(`Method: ${event.request.method}`);
+		console.error(`User: ${event.locals.user?.id || 'Not authenticated'}`);
+		console.error('Headers:', Object.fromEntries(event.request.headers.entries()));
+		
+		if (error instanceof Error) {
+			console.error('Error name:', error.name);
+			console.error('Error message:', error.message);
+			console.error('Stack trace:', error.stack);
+		} else {
+			console.error('Error object:', error);
+		}
+		
+		console.error('='.repeat(80));
 	}
-	
-	console.error('='.repeat(80));
 
 	return {
 		message: process.env.NODE_ENV === 'production' 
