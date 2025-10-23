@@ -1,4 +1,4 @@
-import type { Handle, HandleServerError } from '@sveltejs/kit';
+import { redirect, type Handle, type HandleServerError } from '@sveltejs/kit';
 import * as auth from '$lib/server/auth';
 
 const handleAuth: Handle = async ({ event, resolve }) => {
@@ -32,7 +32,17 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 	return resolve(event);
 };
 
-export const handle: Handle = handleAuth;
+export const handle: Handle = async ({ event, resolve }) => {
+	// First run auth handling
+	const authResponse = await handleAuth({ event, resolve });
+	
+	// Then check for 500 errors and redirect if needed
+	if (authResponse.status === 500) {
+		throw redirect(302, '/');
+	}
+	
+	return authResponse;
+};
 
 export const handleError: HandleServerError = async ({ error, event, status, message }) => {
 	const errorId = crypto.randomUUID();
