@@ -42,6 +42,7 @@ WORKDIR /app
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     dumb-init \
+    procps \
     && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user early

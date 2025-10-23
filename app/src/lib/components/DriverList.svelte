@@ -24,6 +24,12 @@
 		selectedDriver = null;
 	}
 
+	function handleKeydown(event: KeyboardEvent) {
+		if (event.key === 'Escape' && showHistoryModal) {
+			closeHistoryModal();
+		}
+	}
+
 	function getVerificationHistory(driver: Driver) {
 		const history = driver.verificationHistory as any[];
 		return [...(history || [])].sort(
@@ -40,6 +46,43 @@
 			hour: '2-digit',
 			minute: '2-digit'
 		});
+	}
+
+	function formatDateShort(dateString: string) {
+		if (!dateString) return '';
+		const date = new Date(dateString);
+		return date.toLocaleDateString('pl-PL', {
+			year: 'numeric',
+			month: '2-digit',
+			day: '2-digit'
+		});
+	}
+
+	function getCurrentVerification(driver: Driver) {
+		const history = getVerificationHistory(driver);
+		return history.length > 0 ? history[0] : null;
+	}
+
+	function extractLicenseCategories(data: any) {
+		if (!data?.dokumentPotwierdzajacyUprawnienia?.uprawnienia) {
+			return [];
+		}
+
+		const uprawnienia = data.dokumentPotwierdzajacyUprawnienia.uprawnienia;
+		
+		// Handle both array and single object cases
+		const categories = Array.isArray(uprawnienia) ? uprawnienia : [uprawnienia];
+
+		return categories.map((category: any) => ({
+			name: category.kategoriaUprawnienia?.wartosc || 'N/A',
+			issueDate: category.dataWydania || '',
+			expiryDate: category.dataWaznosci || '',
+			isValid: category.dataWaznosci ? new Date(category.dataWaznosci) >= new Date() : false
+		}));
+	}
+
+	function getDocumentExpiryDate(data: any): string {
+		return data?.dokumentPotwierdzajacyUprawnienia?.dataWaznosci || '';
 	}
 
 	function exportToCSV() {
@@ -81,6 +124,8 @@
 		}
 	}
 </script>
+
+<svelte:window onkeydown={handleKeydown} />
 
 <div class="card h-full bg-base-100 shadow-xl">
 	<div class="card-body">
@@ -204,10 +249,12 @@
 
 <!-- Verification History Modal -->
 {#if showHistoryModal && selectedDriver}
+	{@const currentVerification = getCurrentVerification(selectedDriver)}
+	{@const isValid = selectedDriver.status === 1}
 	<div class="modal-open modal">
 		<div class="modal-box max-w-4xl">
 			<h3 class="mb-4 text-lg font-bold">
-				Historia Weryfikacji - {selectedDriver.name}
+				{isValid ? 'Szczegóły Prawa Jazdy' : 'Historia Weryfikacji'} - {selectedDriver.name}
 				{selectedDriver.surname}
 			</h3>
 			<p class="mb-4 text-sm">
@@ -215,7 +262,7 @@
 				{selectedDriver.documentSerialNumber}
 			</p>
 
-			{#if getVerificationHistory(selectedDriver).length === 0}
+			{#if !currentVerification}
 				<div class="alert alert-info">
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
@@ -230,68 +277,165 @@
 							d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
 						></path>
 					</svg>
-					<span>Brak historii weryfikacji dla tego kierowcy.</span>
+					<span>Brak danych weryfikacji dla tego kierowcy.</span>
+				</div>
+			{:else if isValid && currentVerification.data}
+				<!-- Valid License: Show detailed license information -->
+				{@const docExpiry = getDocumentExpiryDate(currentVerification.data)}
+				{@const categories = extractLicenseCategories(currentVerification.data)}
+				
+				<!-- Document Status -->
+				<div class="alert alert-success mb-4">
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						class="h-6 w-6 shrink-0 stroke-current"
+						fill="none"
+						viewBox="0 0 24 24"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+						/>
+					</svg>
+					<div>
+						<h3 class="font-bold">Prawo jazdy ważne</h3>
+						{#if docExpiry}
+							<div class="text-sm">Dokument ważny do: {formatDateShort(docExpiry)}</div>
+						{/if}
+					</div>
+				</div>
+
+				<!-- Categories Table -->
+				{#if categories.length > 0}
+					<div class="mb-4">
+						<h4 class="mb-3 text-base font-semibold">Posiadane uprawnienia:</h4>
+						<div class="overflow-x-auto">
+							<table class="table table-zebra w-full">
+								<thead>
+									<tr>
+										<th>Kategoria</th>
+										<th>Data wydania</th>
+										<th>Ważne do</th>
+										<th class="text-center">Status</th>
+									</tr>
+								</thead>
+								<tbody>
+									{#each categories as category}
+										<tr>
+											<td>
+												<span class="badge badge-lg badge-primary font-bold"
+													>{category.name}</span
+												>
+											</td>
+											<td>{category.issueDate ? formatDateShort(category.issueDate) : '-'}</td>
+											<td>{category.expiryDate ? formatDateShort(category.expiryDate) : '-'}</td>
+											<td class="text-center">
+												{#if category.isValid}
+													<span class="badge badge-success">Ważne</span>
+												{:else}
+													<span class="badge badge-error">Wygasło</span>
+												{/if}
+											</td>
+										</tr>
+									{/each}
+								</tbody>
+							</table>
+						</div>
+					</div>
+				{/if}
+
+				<!-- Last verification info -->
+				<div class="divider">Ostatnia weryfikacja</div>
+				<div class="text-sm text-base-content/70">
+					<p>Zweryfikowano: {formatDate(currentVerification.timestamp)}</p>
 				</div>
 			{:else}
-				<ul class="timeline timeline-vertical">
-					{#each getVerificationHistory(selectedDriver) as verification, index}
-						<li>
-							{#if index > 0}
-								<hr class={verification.isValid ? 'bg-success' : 'bg-error'} />
-							{/if}
-							<div class="timeline-start">{formatDate(verification.timestamp)}</div>
-							<div class="timeline-middle">
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									viewBox="0 0 20 20"
-									fill="currentColor"
-									class="h-5 w-5 {verification.isValid ? 'text-success' : 'text-error'}"
-								>
-									{#if verification.isValid}
-										<path
-											fill-rule="evenodd"
-											d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
-											clip-rule="evenodd"
-										/>
-									{:else}
-										<path
-											fill-rule="evenodd"
-											d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z"
-											clip-rule="evenodd"
-										/>
-									{/if}
-								</svg>
-							</div>
-							<div class="timeline-end timeline-box">
-								<div class="font-bold {verification.isValid ? 'text-success' : 'text-error'}">
-									{verification.isValid ? '✅ Ważne' : '❌ Nieważne'}
-								</div>
-								{#if verification.data}
-									<div class="mt-2 text-sm">
-										{#if verification.data.drivingLicenceNumber}
-											<p>
-												<strong>Numer prawa jazdy:</strong>
-												{verification.data.drivingLicenceNumber}
-											</p>
-										{/if}
-										{#if verification.data.issueDate}
-											<p><strong>Data wydania:</strong> {verification.data.issueDate}</p>
-										{/if}
-										{#if verification.data.expiryDate}
-											<p><strong>Data ważności:</strong> {verification.data.expiryDate}</p>
-										{/if}
-										{#if verification.data.categories && verification.data.categories.length > 0}
-											<p><strong>Kategorie:</strong> {verification.data.categories.join(', ')}</p>
-										{/if}
-									</div>
+				<!-- Invalid License: Show verification history -->
+				{@const history = getVerificationHistory(selectedDriver)}
+				
+				{#if history.length === 0}
+					<div class="alert alert-warning">
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							class="h-6 w-6 shrink-0 stroke-current"
+							fill="none"
+							viewBox="0 0 24 24"
+						>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+							/>
+						</svg>
+						<span>Brak historii weryfikacji.</span>
+					</div>
+				{:else}
+					<div class="alert alert-error mb-4">
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							class="h-6 w-6 shrink-0 stroke-current"
+							fill="none"
+							viewBox="0 0 24 24"
+						>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+							/>
+						</svg>
+						<div>
+							<h3 class="font-bold">Prawo jazdy nieważne</h3>
+							<div class="text-sm">Dokument został uznany za nieważny</div>
+						</div>
+					</div>
+
+					<div class="divider">Historia weryfikacji</div>
+					
+					<ul class="timeline timeline-vertical timeline-compact">
+						{#each history as verification, index}
+							<li>
+								{#if index > 0}
+									<hr class={verification.isValid ? 'bg-success' : 'bg-error'} />
 								{/if}
-							</div>
-							{#if index < getVerificationHistory(selectedDriver).length - 1}
-								<hr class={verification.isValid ? 'bg-success' : 'bg-error'} />
-							{/if}
-						</li>
-					{/each}
-				</ul>
+								<div class="timeline-start text-sm">{formatDate(verification.timestamp)}</div>
+								<div class="timeline-middle">
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										viewBox="0 0 20 20"
+										fill="currentColor"
+										class="h-5 w-5 {verification.isValid ? 'text-success' : 'text-error'}"
+									>
+										{#if verification.isValid}
+											<path
+												fill-rule="evenodd"
+												d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
+												clip-rule="evenodd"
+											/>
+										{:else}
+											<path
+												fill-rule="evenodd"
+												d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z"
+												clip-rule="evenodd"
+											/>
+										{/if}
+									</svg>
+								</div>
+								<div class="timeline-end timeline-box">
+									<div class="text-sm font-bold {verification.isValid ? 'text-success' : 'text-error'}">
+										{verification.isValid ? '✅ Ważne' : '❌ Nieważne'}
+									</div>
+								</div>
+								{#if index < history.length - 1}
+									<hr class={verification.isValid ? 'bg-success' : 'bg-error'} />
+								{/if}
+							</li>
+						{/each}
+					</ul>
+				{/if}
 			{/if}
 
 			<div class="modal-action">
