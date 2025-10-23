@@ -8,16 +8,13 @@ import { browserPool } from './browserPool';
  * @param name - Driver's first name
  * @param surname - Driver's surname
  * @param documentNumber - Document serial number (e.g., "AA004547")
- * @param retryCount - Number of retries (internal use)
  * @returns Promise<any> - Raw JSON response from the government API or null if error
  */
 export async function checkDriverLicence(
 	name: string,
 	surname: string,
-	documentNumber: string,
-	retryCount = 0
+	documentNumber: string
 ): Promise<any> {
-	const MAX_RETRIES = 2;
 	let browser: Browser | null = null;
 	let context: BrowserContext | null = null;
 
@@ -66,19 +63,18 @@ export async function checkDriverLicence(
 
 		return jsonData;
 	} catch (error) {
-		console.error(
-			`Error checking driver licence (attempt ${retryCount + 1}/${MAX_RETRIES + 1}):`,
-			error
-		);
-
-		// Retry on timeout errors if we haven't exceeded max retries
-		if (retryCount < MAX_RETRIES && error instanceof Error && error.name === 'TimeoutError') {
-			console.log(`Retrying validation for ${name} ${surname}...`);
-			// Wait a bit before retrying
-			await new Promise((resolve) => setTimeout(resolve, 5000));
-			return checkDriverLicence(name, surname, documentNumber, retryCount + 1);
+		// Log error but don't crash - worker should continue processing
+		if (error instanceof Error) {
+			if (error.name === 'TimeoutError') {
+				console.error(`Timeout checking driver licence for ${name} ${surname}:`, error.message);
+			} else {
+				console.error(`Error checking driver licence for ${name} ${surname}:`, error.message);
+			}
+		} else {
+			console.error(`Unknown error checking driver licence for ${name} ${surname}:`, error);
 		}
 
+		// Return null to mark as invalid - worker continues
 		return null;
 	} finally {
 		// Close the context (not the browser) to free resources
