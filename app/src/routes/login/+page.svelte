@@ -33,7 +33,7 @@
 				</div>
 				<div class="flex items-center gap-3">
 					<div class="badge badge-success badge-sm">✓</div>
-					<span class="text-base-content/70">Otwarte API i źródło na GitHub</span>
+					<span class="text-base-content/70">Open source on GitHub</span>
 				</div>
 			</div>
 		</div>
@@ -132,7 +132,7 @@
 					{/if}
 
 				<!-- Email Field -->
-				<div class="form-control w-full">
+				<div class="form-control w-full mt-2">
 					<label class="label" for="email">
 						<span class="label-text font-semibold">Email</span>
 					</label>
@@ -163,7 +163,7 @@
 					</div>
 
 				<!-- Password Field -->
-				<div class="form-control w-full mt-4">
+				<div class="form-control w-full mt-6">
 					<label class="label" for="password">
 						<span class="label-text font-semibold">Hasło</span>
 					</label>
@@ -205,8 +205,26 @@
 						{/if}
 					</div>
 
+				<!-- Terms and Privacy Policy Acceptance (only for registration) -->
+				{#if activeAction === 'register'}
+					<div class="form-control mt-6">
+						<label class="label cursor-pointer justify-start gap-3">
+							<input
+								type="checkbox"
+								name="acceptTerms"
+								class="checkbox checkbox-primary"
+								required
+							/>
+							<span class="label-text">
+								Akceptuję <a href="/terms-of-service" target="_blank" class="link link-primary">Warunki Użytkowania</a> 
+								oraz <a href="/privacy-policy" target="_blank" class="link link-primary">Politykę Prywatności</a>
+							</span>
+						</label>
+					</div>
+				{/if}
+
 				<!-- Submit Button -->
-				<div class="form-control w-full mt-6">
+				<div class="form-control w-full mt-8">
 					<button type="submit" class="btn btn-primary w-full" disabled={isLoading}>
 							{#if isLoading}
 								<span class="loading loading-spinner"></span>

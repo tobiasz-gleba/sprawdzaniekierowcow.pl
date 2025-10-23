@@ -64,6 +64,11 @@ export const actions: Actions = {
 		const formData = await event.request.formData();
 		const email = formData.get('email');
 		const password = formData.get('password');
+		const acceptTerms = formData.get('acceptTerms');
+
+		if (!acceptTerms) {
+			return fail(400, { message: 'Musisz zaakceptować Warunki Użytkowania i Politykę Prywatności' });
+		}
 
 		if (!validateEmail(email)) {
 			return fail(400, { message: 'Nieprawidłowy adres email' });
