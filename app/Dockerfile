@@ -74,6 +74,9 @@ COPY --from=builder /app/drizzle ./drizzle
 COPY --from=builder /app/drizzle.config.ts ./drizzle.config.ts
 COPY --from=builder /app/src/lib/server/db ./src/lib/server/db
 
+# Copy scripts directory for cron jobs
+COPY --from=builder /app/scripts ./scripts
+
 # Ensure proper ownership of all app files and playwright cache
 RUN chown -R nodejs:nodejs /app /ms-playwright
 
