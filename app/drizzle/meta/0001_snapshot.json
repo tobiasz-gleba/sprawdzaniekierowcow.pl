@@ -1,8 +1,8 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "5ecc6bd1-53de-4f2c-b957-59e47a3bf69a",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "f4e6b607-ff53-425c-b610-12c97de5e694",
+  "prevId": "d98b3a04-f2f4-42d9-8af3-48f40553b97a",
   "tables": {
     "driver": {
       "name": "driver",
@@ -41,7 +41,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": 1
+          "default": 2
         },
         "user_id": {
           "name": "user_id",
@@ -55,6 +55,20 @@
           "type": "datetime",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false
+        },
+        "verification_history": {
+          "name": "verification_history",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "validation_api_url": {
+          "name": "validation_api_url",
+          "type": "varchar(1024)",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         }
       },

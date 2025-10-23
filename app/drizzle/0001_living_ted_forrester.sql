@@ -1,0 +1,1 @@
+ALTER TABLE `driver` ADD `validation_api_url` varchar(1024);

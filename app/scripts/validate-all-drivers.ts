@@ -19,7 +19,7 @@ import { drizzle } from 'drizzle-orm/mysql2';
 import mysql from 'mysql2/promise';
 import * as table from '../src/lib/server/db/schema.js';
 import { eq } from 'drizzle-orm';
-import { validateDriverStatus } from '../src/lib/server/driverLicenceValidator.js';
+import { validateDriverStatusWithData } from '../src/lib/server/driverLicenceValidator.js';
 
 // Create standalone database connection
 const DB_HOST = process.env.DB_HOST || 'localhost';
@@ -171,26 +171,52 @@ async function main() {
 			await db.update(table.driver).set({ status: 2 }).where(eq(table.driver.id, driver.id));
 			console.log(`  ├─ Status set to PENDING`);
 
-			// Validate the driver
-			const isValid = await validateDriverStatus(
+			// Validate the driver with full data (includes API URL)
+			// Pass existing API URL to enable fast path validation
+			const validationResult = await validateDriverStatusWithData(
 				driver.name,
 				driver.surname,
-				driver.documentSerialNumber
+				driver.documentSerialNumber,
+				driver.validationApiUrl
 			);
-			console.log(`  ├─ Validation result: ${isValid ? 'VALID' : 'INVALID'}`);
+			console.log(`  ├─ Validation result: ${validationResult.isValid ? 'VALID' : 'INVALID'}`);
+			if (driver.validationApiUrl) {
+				console.log(`  ├─ Used fast path: ${validationResult.apiUrl === driver.validationApiUrl}`);
+			}
 
-			// Update status based on validation result
-			const newStatus = isValid ? 1 : 0;
+			// Get existing verification history or create new array
+			const existingHistory = (driver.verificationHistory as unknown[]) || [];
+
+			// Add new verification result to history
+			const updatedHistory = [
+				...existingHistory,
+				{
+					timestamp: validationResult.timestamp,
+					isValid: validationResult.isValid,
+					data: validationResult.data,
+					usedDirectApi: !!driver.validationApiUrl
+				}
+			];
+
+			// Update status, verification history, and API URL based on validation result
+			const newStatus = validationResult.isValid ? 1 : 0;
 			await db
 				.update(table.driver)
-				.set({ status: newStatus })
+				.set({
+					status: newStatus,
+					verificationHistory: updatedHistory,
+					validationApiUrl: validationResult.apiUrl
+				})
 				.where(eq(table.driver.id, driver.id));
 
 			const duration = Date.now() - startTime;
 			console.log(`  ├─ Status updated to: ${formatStatus(newStatus)}`);
+			if (validationResult.apiUrl) {
+				console.log(`  ├─ API URL stored for fast validation`);
+			}
 			console.log(`  └─ Duration: ${duration}ms`);
 
-			if (isValid) {
+			if (validationResult.isValid) {
 				validCount++;
 				console.log(`${progress} ✅ VALID - ${driver.name} ${driver.surname}\n`);
 			} else {

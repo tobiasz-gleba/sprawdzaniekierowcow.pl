@@ -39,10 +39,12 @@ export async function revalidateDriver(driverId: number): Promise<boolean> {
 		await db.update(table.driver).set({ status: 2 }).where(eq(table.driver.id, driverId));
 
 		// Validate the driver license and get full data
+		// Pass existing API URL to enable fast path validation
 		const validationResult = await validateDriverStatusWithData(
 			driver.name,
 			driver.surname,
-			driver.documentSerialNumber
+			driver.documentSerialNumber,
+			driver.validationApiUrl
 		);
 
 		// Get existing verification history or create new array
@@ -54,16 +56,18 @@ export async function revalidateDriver(driverId: number): Promise<boolean> {
 			{
 				timestamp: validationResult.timestamp,
 				isValid: validationResult.isValid,
-				data: validationResult.data
+				data: validationResult.data,
+				usedDirectApi: !!driver.validationApiUrl // Track if we tried direct API
 			}
 		];
 
-		// Update the driver's status and verification history
+		// Update the driver's status, verification history, AND API URL
 		await db
 			.update(table.driver)
 			.set({
 				status: validationResult.isValid ? 1 : 0,
-				verificationHistory: updatedHistory
+				verificationHistory: updatedHistory,
+				validationApiUrl: validationResult.apiUrl // Store/update API URL
 			})
 			.where(eq(table.driver.id, driverId));
 

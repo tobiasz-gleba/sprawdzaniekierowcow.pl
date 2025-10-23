@@ -26,7 +26,8 @@ export const driver = mysqlTable('driver', {
 		.notNull()
 		.references(() => user.id),
 	createdAt: datetime('created_at').notNull(),
-	verificationHistory: json('verification_history')
+	verificationHistory: json('verification_history'),
+	validationApiUrl: varchar('validation_api_url', { length: 1024 }) // Direct API URL for faster validation
 });
 
 export const emailVerificationToken = mysqlTable('email_verification_token', {

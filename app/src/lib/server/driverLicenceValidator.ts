@@ -10,13 +10,13 @@ import { chromium, type Browser, type BrowserContext } from 'playwright';
  * @param name - Driver's first name
  * @param surname - Driver's surname
  * @param documentNumber - Document serial number (e.g., "AA004547")
- * @returns Promise<any> - Raw JSON response from the government API or null if error
+ * @returns Promise with data and apiUrl, or null if error
  */
 export async function checkDriverLicence(
 	name: string,
 	surname: string,
 	documentNumber: string
-): Promise<any> {
+): Promise<{ data: any; apiUrl: string | null } | null> {
 	let browser: Browser | null = null;
 	let context: BrowserContext | null = null;
 
@@ -87,9 +87,10 @@ export async function checkDriverLicence(
 
 		// Wait for and capture the API response
 		const apiResponse = await apiResponsePromise;
+		const apiUrl = apiResponse.url(); // Capture the URL for future use
 		const jsonData = await apiResponse.json();
 
-		return jsonData;
+		return { data: jsonData, apiUrl };
 	} catch (error) {
 		// Log error but don't crash - worker should continue processing
 		if (error instanceof Error) {
@@ -117,6 +118,83 @@ export async function checkDriverLicence(
 }
 
 /**
+ * Attempts to fetch driver data directly from a stored API URL
+ * This is faster than filling the form, but may fail if URL is expired/invalid
+ *
+ * @param apiUrl - The stored validation API URL
+ * @returns Promise with data or null if failed
+ */
+export async function fetchDriverDataDirectly(apiUrl: string): Promise<any> {
+	try {
+		const controller = new AbortController();
+		const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 seconds timeout
+
+		const response = await fetch(apiUrl, {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json',
+				'User-Agent':
+					'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+			},
+			signal: controller.signal
+		});
+
+		clearTimeout(timeoutId);
+
+		if (!response.ok) {
+			console.log(`Direct API fetch failed: ${response.status} ${response.statusText}`);
+			return null;
+		}
+
+		const data = await response.json();
+		return data;
+	} catch (error) {
+		if (error instanceof Error) {
+			console.log(`Direct API fetch error for ${apiUrl}:`, error.message);
+		}
+		return null;
+	}
+}
+
+/**
+ * Validates driver license with smart fallback:
+ * 1. Try direct API fetch if URL is available (fast path)
+ * 2. Fall back to form filling if direct fetch fails (slow path)
+ * 3. Returns data and the working API URL
+ *
+ * @param name - Driver's first name
+ * @param surname - Driver's surname
+ * @param documentNumber - Document serial number
+ * @param existingApiUrl - Optional stored API URL to try first
+ * @returns Promise with validation data and API URL
+ */
+export async function checkDriverLicenceWithFallback(
+	name: string,
+	surname: string,
+	documentNumber: string,
+	existingApiUrl?: string | null
+): Promise<{ data: any; apiUrl: string | null } | null> {
+	// FAST PATH: Try direct API fetch if URL is available
+	if (existingApiUrl) {
+		console.log(`Attempting direct API fetch for ${name} ${surname}...`);
+		const directData = await fetchDriverDataDirectly(existingApiUrl);
+
+		if (directData && directData.dokumentPotwierdzajacyUprawnienia) {
+			console.log(`✅ Direct API fetch successful for ${name} ${surname}`);
+			return { data: directData, apiUrl: existingApiUrl };
+		}
+
+		console.log(`⚠️  Direct API fetch failed for ${name} ${surname}, falling back to form...`);
+	}
+
+	// SLOW PATH: Fall back to form filling
+	console.log(`Using form submission for ${name} ${surname}...`);
+	const result = await checkDriverLicence(name, surname, documentNumber);
+
+	return result;
+}
+
+/**
  * Validates driver status by checking if the document status is "Wydany"
  * and the expiry date has not passed
  *
@@ -132,13 +210,13 @@ export async function validateDriverStatus(
 ): Promise<boolean> {
 	try {
 		// Get the driver license data
-		const data = await checkDriverLicence(name, surname, documentNumber);
+		const result = await checkDriverLicence(name, surname, documentNumber);
 
-		if (!data || !data.dokumentPotwierdzajacyUprawnienia) {
+		if (!result || !result.data || !result.data.dokumentPotwierdzajacyUprawnienia) {
 			return false;
 		}
 
-		const document = data.dokumentPotwierdzajacyUprawnienia;
+		const document = result.data.dokumentPotwierdzajacyUprawnienia;
 
 		// Check document status - must be "Wydany" (Issued)
 		const status = document.stanDokumentu?.stanDokumentu?.wartosc;
@@ -172,33 +250,43 @@ export async function validateDriverStatus(
  * @param name - Driver's first name
  * @param surname - Driver's surname
  * @param documentNumber - Document serial number
- * @returns Promise with validation result and full JSON data
+ * @param existingApiUrl - Optional stored API URL to try first (fast path)
+ * @returns Promise with validation result, full JSON data, and API URL
  */
 export async function validateDriverStatusWithData(
 	name: string,
 	surname: string,
-	documentNumber: string
-): Promise<{ isValid: boolean; data: any; timestamp: string }> {
+	documentNumber: string,
+	existingApiUrl?: string | null
+): Promise<{ isValid: boolean; data: any; timestamp: string; apiUrl: string | null }> {
 	const timestamp = new Date().toISOString();
 
 	try {
-		// Get the driver license data
-		const data = await checkDriverLicence(name, surname, documentNumber);
+		// Use new function with fallback (tries direct API first if URL provided)
+		const result = await checkDriverLicenceWithFallback(
+			name,
+			surname,
+			documentNumber,
+			existingApiUrl
+		);
 
-		if (!data || !data.dokumentPotwierdzajacyUprawnienia) {
+		if (!result || !result.data || !result.data.dokumentPotwierdzajacyUprawnienia) {
 			return {
 				isValid: false,
-				data: data || { error: 'No data returned' },
-				timestamp
+				data: result?.data || { error: 'No data returned' },
+				timestamp,
+				apiUrl: null
 			};
 		}
 
+		const data = result.data;
+		const apiUrl = result.apiUrl;
 		const document = data.dokumentPotwierdzajacyUprawnienia;
 
 		// Check document status - must be "Wydany" (Issued)
 		const status = document.stanDokumentu?.stanDokumentu?.wartosc;
 		if (status !== 'Wydany') {
-			return { isValid: false, data, timestamp };
+			return { isValid: false, data, timestamp, apiUrl };
 		}
 
 		// Check if document has expired
@@ -209,18 +297,19 @@ export async function validateDriverStatusWithData(
 			today.setHours(0, 0, 0, 0); // Reset time to start of day for accurate comparison
 
 			if (expiry < today) {
-				return { isValid: false, data, timestamp };
+				return { isValid: false, data, timestamp, apiUrl };
 			}
 		}
 
 		// All checks passed
-		return { isValid: true, data, timestamp };
+		return { isValid: true, data, timestamp, apiUrl };
 	} catch (error) {
 		console.error('Error validating driver status:', error);
 		return {
 			isValid: false,
 			data: { error: String(error) },
-			timestamp
+			timestamp,
+			apiUrl: null
 		};
 	}
 }

@@ -57,10 +57,12 @@ async function validateDriver(driver: typeof table.driver.$inferSelect): Promise
 
 	try {
 		// Validate the driver license and get full data
+		// Pass existing API URL to enable fast path validation
 		const validationResult = await validateDriverStatusWithData(
 			driver.name,
 			driver.surname,
-			driver.documentSerialNumber
+			driver.documentSerialNumber,
+			driver.validationApiUrl
 		);
 
 		// Get existing verification history or create new array
@@ -72,17 +74,19 @@ async function validateDriver(driver: typeof table.driver.$inferSelect): Promise
 			{
 				timestamp: validationResult.timestamp,
 				isValid: validationResult.isValid,
-				data: validationResult.data
+				data: validationResult.data,
+				usedDirectApi: !!driver.validationApiUrl // Track if we tried direct API
 			}
 		];
 
-		// Update the driver's status and verification history
+		// Update the driver's status, verification history, AND API URL
 		const newStatus = validationResult.isValid ? 1 : 0;
 		await db
 			.update(table.driver)
 			.set({
 				status: newStatus,
-				verificationHistory: updatedHistory
+				verificationHistory: updatedHistory,
+				validationApiUrl: validationResult.apiUrl // Store/update API URL
 			})
 			.where(eq(table.driver.id, driver.id));
 
