@@ -52,10 +52,22 @@ export async function checkDriverLicence(
 		await page.locator('input#nazwisko').fill(surname, { timeout: 10000 });
 		await page.locator('input#seriaNumerBlankietuDruku').fill(documentNumber, { timeout: 10000 });
 
-		// Submit the form
-		await page
-			.locator('button.btn.btn-primary:has-text("Sprawdź uprawnienia")')
-			.click({ timeout: 10000 });
+		// Wait for button to be enabled (government website validates form first)
+		const submitButton = page.locator('button.btn.btn-primary:has-text("Sprawdź uprawnienia")');
+		await submitButton.waitFor({ state: 'visible', timeout: 10000 });
+
+		// Wait for button to be enabled (not disabled)
+		await page.waitForFunction(
+			(selector) => {
+				const button = document.querySelector(selector);
+				return button && !button.hasAttribute('disabled');
+			},
+			'button.btn.btn-primary',
+			{ timeout: 15000 }
+		);
+
+		// Now click the enabled button
+		await submitButton.click({ timeout: 5000 });
 
 		// Wait for and capture the API response
 		const apiResponse = await apiResponsePromise;
