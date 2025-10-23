@@ -21,7 +21,7 @@ spec:
           restartPolicy: OnFailure
           containers:
           - name: mark-all
-            image: ghcr.io/tobiasz-gleba/sprawdzaniekierowcow.pl:20251023134334 # {"$imagepolicy": "sprawdzaniekierowcow:sprawdzaniekierowcow"}
+            image: ghcr.io/tobiasz-gleba/sprawdzaniekierowcow.pl:20251023134823 # {"$imagepolicy": "sprawdzaniekierowcow:sprawdzaniekierowcow"}
             command: ["npm", "run", "mark:all"]
             workingDir: /app
             env:
@@ -68,7 +68,7 @@ spec:
           restartPolicy: OnFailure
           containers:
           - name: notify-invalid
-            image: ghcr.io/tobiasz-gleba/sprawdzaniekierowcow.pl:20251023134334 # {"$imagepolicy": "sprawdzaniekierowcow:sprawdzaniekierowcow"}
+            image: ghcr.io/tobiasz-gleba/sprawdzaniekierowcow.pl:20251023134823 # {"$imagepolicy": "sprawdzaniekierowcow:sprawdzaniekierowcow"}
             command: ["npm", "run", "notify:invalid"]
             workingDir: /app
             env:
