@@ -6,7 +6,7 @@ metadata:
   labels:
     app: sprawdzaniekierowcow
 spec:
-  schedule: "0 0 * * *" # Run at midnight every day
+  schedule: "* * * * *" # "0 0 * * *" # Run at midnight every day
   concurrencyPolicy: Forbid # Prevent overlapping runs
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 3
@@ -67,7 +67,7 @@ metadata:
   labels:
     app: sprawdzaniekierowcow
 spec:
-  schedule: "0 8 * * *" # Run at 8 AM every day (after validation)
+  schedule: "* * * * *" # "0 8 * * *" # Run at 8 AM every day (after validation)
   concurrencyPolicy: Forbid # Prevent overlapping runs
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 3
