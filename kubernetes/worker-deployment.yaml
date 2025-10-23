@@ -21,7 +21,7 @@ spec:
       containers:
         - name: worker
           image: ghcr.io/tobiasz-gleba/sprawdzaniekierowcow.pl:20251023170109 # {"$imagepolicy": "sprawdzaniekierowcow:sprawdzaniekierowcow"}
-          command: ['tsx', 'scripts/validation-worker.ts']
+          command: [ 'npx', 'tsx', 'scripts/validation-worker.ts']
           workingDir: /app
           env:
             - name: DB_HOST
