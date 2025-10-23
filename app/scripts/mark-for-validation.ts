@@ -147,7 +147,10 @@ async function main() {
 		const progress = `[${i + 1}/${drivers.length}]`;
 
 		try {
-			await db.update(table.driver).set({ status: 2 }).where(eq(table.driver.id, driver.id));
+			await db
+				.update(table.driver)
+				.set({ status: 2, processing: false })
+				.where(eq(table.driver.id, driver.id));
 
 			successCount++;
 			console.log(

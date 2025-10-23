@@ -18,7 +18,7 @@
 import { drizzle } from 'drizzle-orm/mysql2';
 import mysql from 'mysql2/promise';
 import * as table from '../src/lib/server/db/schema.js';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import { validateDriverStatusWithData } from '../src/lib/server/driverLicenceValidator.js';
 
 // Create standalone database connection
@@ -79,14 +79,15 @@ async function validateDriver(driver: typeof table.driver.$inferSelect): Promise
 			}
 		];
 
-		// Update the driver's status, verification history, AND API URL
+		// Update the driver's status, verification history, API URL, AND reset processing flag
 		const newStatus = validationResult.isValid ? 1 : 0;
 		await db
 			.update(table.driver)
 			.set({
 				status: newStatus,
 				verificationHistory: updatedHistory,
-				validationApiUrl: validationResult.apiUrl // Store/update API URL
+				validationApiUrl: validationResult.apiUrl, // Store/update API URL
+				processing: false // Reset processing flag
 			})
 			.where(eq(table.driver.id, driver.id));
 
@@ -108,9 +109,12 @@ async function validateDriver(driver: typeof table.driver.$inferSelect): Promise
 			error
 		);
 
-		// Mark as invalid on error
+		// Mark as invalid and reset processing flag on error
 		try {
-			await db.update(table.driver).set({ status: 0 }).where(eq(table.driver.id, driver.id));
+			await db
+				.update(table.driver)
+				.set({ status: 0, processing: false })
+				.where(eq(table.driver.id, driver.id));
 		} catch (updateError) {
 			console.error(
 				`[${new Date().toISOString()}] Failed to update driver ${driver.id} status:`,
@@ -131,20 +135,43 @@ async function processNextDriver(): Promise<boolean> {
 	isProcessing = true;
 
 	try {
-		// Fetch one pending driver (status = 2)
+		// First, try to fetch one pending driver that is NOT being processed (status = 2, processing = false)
 		// Order by createdAt to process oldest first (FIFO)
-		const pendingDrivers = await db
+		let pendingDrivers = await db
 			.select()
 			.from(table.driver)
-			.where(eq(table.driver.status, 2))
+			.where(and(eq(table.driver.status, 2), eq(table.driver.processing, false)))
 			.orderBy(table.driver.createdAt)
 			.limit(1);
 
+		// If no unprocessed pending drivers, fallback to processed ones (allows parallel checking)
 		if (pendingDrivers.length === 0) {
-			return false; // No pending drivers
+			console.log(
+				`[${new Date().toISOString()}] No unprocessed pending drivers, checking already processing drivers...`
+			);
+			pendingDrivers = await db
+				.select()
+				.from(table.driver)
+				.where(and(eq(table.driver.status, 2), eq(table.driver.processing, true)))
+				.orderBy(table.driver.createdAt)
+				.limit(1);
+		}
+
+		if (pendingDrivers.length === 0) {
+			return false; // No pending drivers at all
 		}
 
 		const driver = pendingDrivers[0];
+
+		// Set processing flag to true to lock this driver
+		await db
+			.update(table.driver)
+			.set({ processing: true })
+			.where(eq(table.driver.id, driver.id));
+
+		console.log(`[${new Date().toISOString()}] 🔒 Locked driver ${driver.id} for processing`);
+
+		// Validate the driver (this will reset processing flag when done)
 		await validateDriver(driver);
 
 		// Add delay between validations

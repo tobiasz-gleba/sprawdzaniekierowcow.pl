@@ -35,8 +35,11 @@ export async function revalidateDriver(driverId: number): Promise<boolean> {
 
 		const driver = drivers[0];
 
-		// Set status to pending
-		await db.update(table.driver).set({ status: 2 }).where(eq(table.driver.id, driverId));
+		// Set status to pending and reset processing flag
+		await db
+			.update(table.driver)
+			.set({ status: 2, processing: false })
+			.where(eq(table.driver.id, driverId));
 
 		// Validate the driver license and get full data
 		// Pass existing API URL to enable fast path validation
@@ -61,22 +64,26 @@ export async function revalidateDriver(driverId: number): Promise<boolean> {
 			}
 		];
 
-		// Update the driver's status, verification history, AND API URL
+		// Update the driver's status, verification history, API URL, AND reset processing flag
 		await db
 			.update(table.driver)
 			.set({
 				status: validationResult.isValid ? 1 : 0,
 				verificationHistory: updatedHistory,
-				validationApiUrl: validationResult.apiUrl // Store/update API URL
+				validationApiUrl: validationResult.apiUrl, // Store/update API URL
+				processing: false // Reset processing flag
 			})
 			.where(eq(table.driver.id, driverId));
 
 		return validationResult.isValid;
 	} catch (error) {
 		console.error(`Error re-validating driver ${driverId}:`, error);
-		// Mark as invalid on error
+		// Mark as invalid and reset processing flag on error
 		try {
-			await db.update(table.driver).set({ status: 0 }).where(eq(table.driver.id, driverId));
+			await db
+				.update(table.driver)
+				.set({ status: 0, processing: false })
+				.where(eq(table.driver.id, driverId));
 		} catch (updateError) {
 			console.error(`Error updating driver ${driverId} status:`, updateError);
 		}

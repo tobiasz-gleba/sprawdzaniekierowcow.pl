@@ -108,7 +108,7 @@ export const actions: Actions = {
 		}
 
 		try {
-			// Update driver and set status to pending
+			// Update driver and set status to pending, reset processing flag, and clear API URL
 			// Worker will automatically pick it up for validation
 			await db
 				.update(table.driver)
@@ -116,7 +116,9 @@ export const actions: Actions = {
 					name: name.trim(),
 					surname: surname.trim(),
 					documentSerialNumber: documentSerialNumber.trim(),
-					status: 2 // pending - will be processed by validation worker
+					status: 2, // pending - will be processed by validation worker
+					processing: false, // Reset processing flag so worker can pick it up
+					validationApiUrl: null // Clear API URL since driver data changed
 				})
 				.where(
 					and(

@@ -167,8 +167,11 @@ async function main() {
 		console.log(`  ├─ Started at: ${timestamp}`);
 
 		try {
-			// Set status to pending
-			await db.update(table.driver).set({ status: 2 }).where(eq(table.driver.id, driver.id));
+			// Set status to pending and reset processing flag
+			await db
+				.update(table.driver)
+				.set({ status: 2, processing: false })
+				.where(eq(table.driver.id, driver.id));
 			console.log(`  ├─ Status set to PENDING`);
 
 			// Validate the driver with full data (includes API URL)
@@ -198,14 +201,15 @@ async function main() {
 				}
 			];
 
-			// Update status, verification history, and API URL based on validation result
+			// Update status, verification history, API URL, and reset processing flag based on validation result
 			const newStatus = validationResult.isValid ? 1 : 0;
 			await db
 				.update(table.driver)
 				.set({
 					status: newStatus,
 					verificationHistory: updatedHistory,
-					validationApiUrl: validationResult.apiUrl
+					validationApiUrl: validationResult.apiUrl,
+					processing: false // Reset processing flag
 				})
 				.where(eq(table.driver.id, driver.id));
 
@@ -230,9 +234,12 @@ async function main() {
 			console.error(`${progress} ⚠️  ERROR - ${driver.name} ${driver.surname}`);
 			console.error(`  └─ Error: ${error instanceof Error ? error.message : String(error)}\n`);
 
-			// Mark as invalid on error
+			// Mark as invalid and reset processing flag on error
 			try {
-				await db.update(table.driver).set({ status: 0 }).where(eq(table.driver.id, driver.id));
+				await db
+					.update(table.driver)
+					.set({ status: 0, processing: false })
+					.where(eq(table.driver.id, driver.id));
 			} catch (updateError) {
 				console.error(`  Failed to update status: ${updateError}`);
 			}
