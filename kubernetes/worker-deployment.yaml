@@ -20,8 +20,8 @@ spec:
       restartPolicy: Always
       containers:
         - name: worker
-          image: ghcr.io/tobiasz-gleba/sprawdzaniekierowcow.pl:20251023170109 # {"$imagepolicy": "sprawdzaniekierowcow:sprawdzaniekierowcow"}
-          command: [ 'npx', 'tsx', 'scripts/validation-worker.ts']
+          image: ghcr.io/tobiasz-gleba/sprawdzaniekierowcow.pl:20251023170924 # {"$imagepolicy": "sprawdzaniekierowcow:sprawdzaniekierowcow"}
+          command: ['npx', 'tsx', 'scripts/validation-worker.ts']
           workingDir: /app
           env:
             - name: DB_HOST
