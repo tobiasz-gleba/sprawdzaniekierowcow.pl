@@ -7,10 +7,12 @@
 </script>
 
 <div class="hero min-h-screen bg-gradient-to-br from-base-200 to-base-300">
-	<div class="hero-content flex-col max-w-2xl px-4">
+	<div class="hero-content max-w-2xl flex-col px-4">
 		<!-- Header -->
-		<div class="text-center max-w-md">
-			<div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
+		<div class="max-w-md text-center">
+			<div
+				class="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-primary/10"
+			>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
 					class="h-8 w-8 text-primary"
@@ -26,7 +28,7 @@
 					/>
 				</svg>
 			</div>
-			<h1 class="text-4xl font-bold mb-3">Zapomniałeś hasła?</h1>
+			<h1 class="mb-3 text-4xl font-bold">Zapomniałeś hasła?</h1>
 			<p class="text-base-content/70">
 				Nie martw się! Wprowadź swój adres email, a wyślemy Ci link do resetowania hasła.
 			</p>
@@ -47,7 +49,7 @@
 			>
 				<!-- Alert -->
 				{#if form?.message}
-					<div role="alert" class={`alert mb-4 ${form.success ? 'alert-success' : 'alert-error'}`}>
+					<div role="alert" class={`mb-4 alert ${form.success ? 'alert-success' : 'alert-error'}`}>
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
 							class="h-5 w-5 shrink-0 stroke-current"
@@ -76,7 +78,7 @@
 
 				<!-- Info Box -->
 				{#if !form?.success}
-					<div class="alert alert-info mb-4">
+					<div class="mb-4 alert alert-info">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
 							fill="none"
@@ -101,7 +103,7 @@
 					<label class="label" for="email">
 						<span class="label-text font-semibold">Adres email</span>
 					</label>
-					<label class="input input-bordered flex items-center gap-2">
+					<label class="input-bordered input flex items-center gap-2">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
 							viewBox="0 0 16 16"
@@ -136,7 +138,7 @@
 						{:else}
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
-								class="h-5 w-5 mr-2"
+								class="mr-2 h-5 w-5"
 								fill="none"
 								viewBox="0 0 24 24"
 								stroke="currentColor"
@@ -156,7 +158,7 @@
 				<!-- Back Link -->
 				<div class="divider text-xs"></div>
 				<div class="text-center">
-					<a href="/login" class="btn btn-ghost btn-sm gap-2">
+					<a href="/login" class="btn gap-2 btn-ghost btn-sm">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
 							class="h-4 w-4"

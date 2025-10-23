@@ -7,10 +7,12 @@
 </script>
 
 <div class="hero min-h-screen bg-gradient-to-br from-base-200 to-base-300">
-	<div class="hero-content flex-col max-w-2xl px-4">
+	<div class="hero-content max-w-2xl flex-col px-4">
 		<!-- Header -->
-		<div class="text-center max-w-md">
-			<div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-warning/10 mb-4">
+		<div class="max-w-md text-center">
+			<div
+				class="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-warning/10"
+			>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
 					class="h-8 w-8 text-warning"
@@ -26,10 +28,8 @@
 					/>
 				</svg>
 			</div>
-			<h1 class="text-4xl font-bold mb-3">Email weryfikacyjny</h1>
-			<p class="text-base-content/70">
-				Nie otrzymałeś emaila? Wyślemy Ci nowy link weryfikacyjny.
-			</p>
+			<h1 class="mb-3 text-4xl font-bold">Email weryfikacyjny</h1>
+			<p class="text-base-content/70">Nie otrzymałeś emaila? Wyślemy Ci nowy link weryfikacyjny.</p>
 		</div>
 
 		<!-- Form Card -->
@@ -47,7 +47,7 @@
 			>
 				<!-- Alert -->
 				{#if form?.message}
-					<div role="alert" class={`alert mb-4 ${form.success ? 'alert-success' : 'alert-error'}`}>
+					<div role="alert" class={`mb-4 alert ${form.success ? 'alert-success' : 'alert-error'}`}>
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
 							class="h-5 w-5 shrink-0 stroke-current"
@@ -76,7 +76,7 @@
 
 				<!-- Info Box -->
 				{#if !form?.success}
-					<div class="alert mb-4">
+					<div class="mb-4 alert">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
 							fill="none"
@@ -91,8 +91,8 @@
 							></path>
 						</svg>
 						<div class="text-sm">
-							<div class="font-semibold mb-1">Co powinieneś sprawdzić?</div>
-							<ul class="list-disc list-inside space-y-1 opacity-80">
+							<div class="mb-1 font-semibold">Co powinieneś sprawdzić?</div>
+							<ul class="list-inside list-disc space-y-1 opacity-80">
 								<li>Folder spam lub wiadomości niechciane</li>
 								<li>Poprawność adresu email przy rejestracji</li>
 								<li>Czas dostarczenia - może potrwać kilka minut</li>
@@ -106,7 +106,7 @@
 					<label class="label" for="email">
 						<span class="label-text font-semibold">Adres email</span>
 					</label>
-					<label class="input input-bordered flex items-center gap-2">
+					<label class="input-bordered input flex items-center gap-2">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
 							viewBox="0 0 16 16"
@@ -141,7 +141,7 @@
 						{:else}
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
-								class="h-5 w-5 mr-2"
+								class="mr-2 h-5 w-5"
 								fill="none"
 								viewBox="0 0 24 24"
 								stroke="currentColor"
@@ -159,7 +159,7 @@
 				</div>
 
 				<!-- Additional Info -->
-				<div class="alert alert-warning mt-4">
+				<div class="mt-4 alert alert-warning">
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
 						class="h-5 w-5 shrink-0 stroke-current"
@@ -174,14 +174,15 @@
 						/>
 					</svg>
 					<span class="text-xs">
-						Możesz wysłać ponownie email tylko raz na 5 minut. Sprawdź folder spam przed kolejną próbą.
+						Możesz wysłać ponownie email tylko raz na 5 minut. Sprawdź folder spam przed kolejną
+						próbą.
 					</span>
 				</div>
 
 				<!-- Back Link -->
 				<div class="divider text-xs"></div>
 				<div class="text-center">
-					<a href="/login" class="btn btn-ghost btn-sm gap-2">
+					<a href="/login" class="btn gap-2 btn-ghost btn-sm">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
 							class="h-4 w-4"

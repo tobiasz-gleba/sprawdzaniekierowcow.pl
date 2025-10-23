@@ -5,7 +5,7 @@ import { env } from '$env/dynamic/private';
 // Load SMTP configuration from environment variables
 function getEmailConfig() {
 	const { EMAIL_USER, EMAIL_PASS, SMTP_HOST, SMTP_PORT } = env;
-	
+
 	if (!EMAIL_USER || !EMAIL_PASS || !SMTP_HOST) {
 		throw new Error(
 			'Missing required SMTP environment variables: EMAIL_USER, EMAIL_PASS, SMTP_HOST'

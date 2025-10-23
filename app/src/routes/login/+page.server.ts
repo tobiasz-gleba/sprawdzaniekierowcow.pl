@@ -67,7 +67,9 @@ export const actions: Actions = {
 		const acceptTerms = formData.get('acceptTerms');
 
 		if (!acceptTerms) {
-			return fail(400, { message: 'Musisz zaakceptować Warunki Użytkowania i Politykę Prywatności' });
+			return fail(400, {
+				message: 'Musisz zaakceptować Warunki Użytkowania i Politykę Prywatności'
+			});
 		}
 
 		if (!validateEmail(email)) {

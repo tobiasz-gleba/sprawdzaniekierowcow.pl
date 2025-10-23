@@ -5,12 +5,14 @@
 </script>
 
 <div class="hero min-h-screen bg-gradient-to-br from-base-200 to-base-300">
-	<div class="hero-content flex-col max-w-2xl px-4">
+	<div class="hero-content max-w-2xl flex-col px-4">
 		<div class="card w-full max-w-md bg-base-100 shadow-2xl">
 			<div class="card-body items-center text-center">
 				{#if data.success}
 					<!-- Success State -->
-					<div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-success/10 mb-6 animate-pulse">
+					<div
+						class="mb-6 inline-flex h-20 w-20 animate-pulse items-center justify-center rounded-full bg-success/10"
+					>
 						<svg
 							class="h-12 w-12 text-success"
 							fill="none"
@@ -25,8 +27,8 @@
 							/>
 						</svg>
 					</div>
-					<h2 class="text-3xl font-bold text-success mb-2">Weryfikacja pomyślna!</h2>
-					<div class="badge badge-success gap-2 mb-4">
+					<h2 class="mb-2 text-3xl font-bold text-success">Weryfikacja pomyślna!</h2>
+					<div class="mb-4 badge gap-2 badge-success">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
 							class="h-3 w-3"
@@ -45,7 +47,9 @@
 					</div>
 				{:else}
 					<!-- Error State -->
-					<div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-error/10 mb-6">
+					<div
+						class="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-error/10"
+					>
 						<svg class="h-12 w-12 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path
 								stroke-linecap="round"
@@ -55,8 +59,8 @@
 							/>
 						</svg>
 					</div>
-					<h2 class="text-3xl font-bold text-error mb-2">Weryfikacja nie powiodła się</h2>
-					<div class="badge badge-error gap-2 mb-4">
+					<h2 class="mb-2 text-3xl font-bold text-error">Weryfikacja nie powiodła się</h2>
+					<div class="mb-4 badge gap-2 badge-error">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
 							class="h-3 w-3"
@@ -75,18 +79,15 @@
 					</div>
 				{/if}
 
-				<p class="text-base-content/80 mb-6 max-w-sm">{data.message}</p>
+				<p class="mb-6 max-w-sm text-base-content/80">{data.message}</p>
 
 				<div class="divider"></div>
 
-				<div class="flex gap-2 w-full flex-col sm:flex-row">
-					<a
-						href="/login"
-						class={`btn flex-1 ${data.success ? 'btn-primary' : 'btn-outline'}`}
-					>
+				<div class="flex w-full flex-col gap-2 sm:flex-row">
+					<a href="/login" class={`btn flex-1 ${data.success ? 'btn-primary' : 'btn-outline'}`}>
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
-							class="h-5 w-5 mr-2"
+							class="mr-2 h-5 w-5"
 							fill="none"
 							viewBox="0 0 24 24"
 							stroke="currentColor"
@@ -101,10 +102,10 @@
 						{data.success ? 'Zaloguj się teraz' : 'Wróć do logowania'}
 					</a>
 					{#if !data.success}
-						<a href="/resend-verification" class="btn btn-primary flex-1">
+						<a href="/resend-verification" class="btn flex-1 btn-primary">
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
-								class="h-5 w-5 mr-2"
+								class="mr-2 h-5 w-5"
 								fill="none"
 								viewBox="0 0 24 24"
 								stroke="currentColor"
@@ -122,7 +123,7 @@
 				</div>
 
 				{#if data.success}
-					<div class="alert alert-success mt-6 w-full">
+					<div class="mt-6 alert w-full alert-success">
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
 							class="h-5 w-5 shrink-0 stroke-current"

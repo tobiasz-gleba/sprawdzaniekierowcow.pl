@@ -26,8 +26,8 @@
 
 	function getVerificationHistory(driver: Driver) {
 		const history = driver.verificationHistory as any[];
-		return [...(history || [])].sort((a, b) => 
-			new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+		return [...(history || [])].sort(
+			(a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
 		);
 	}
 
@@ -55,11 +55,7 @@
 
 			// Add driver data
 			drivers.forEach((driver) => {
-				const row = [
-					driver.name,
-					driver.surname,
-					driver.documentSerialNumber
-				];
+				const row = [driver.name, driver.surname, driver.documentSerialNumber];
 				// Escape fields that might contain commas
 				const escapedRow = row.map((field) => `"${field}"`);
 				csvRows.push(escapedRow.join(','));
@@ -143,7 +139,10 @@
 									{#if driver.status === 1}
 										<span class="text-2xl" title="Ważne">✅</span>
 									{:else if driver.status === 2}
-										<span class="loading loading-spinner loading-md text-warning" title="W trakcie weryfikacji"></span>
+										<span
+											class="loading loading-md loading-spinner text-warning"
+											title="W trakcie weryfikacji"
+										></span>
 									{:else}
 										<span class="text-2xl" title="Nieważne">❌</span>
 									{/if}
@@ -205,15 +204,17 @@
 
 <!-- Verification History Modal -->
 {#if showHistoryModal && selectedDriver}
-	<div class="modal modal-open">
+	<div class="modal-open modal">
 		<div class="modal-box max-w-4xl">
-			<h3 class="font-bold text-lg mb-4">
-				Historia Weryfikacji - {selectedDriver.name} {selectedDriver.surname}
+			<h3 class="mb-4 text-lg font-bold">
+				Historia Weryfikacji - {selectedDriver.name}
+				{selectedDriver.surname}
 			</h3>
-			<p class="text-sm mb-4">
-				<strong>Numer dokumentu:</strong> {selectedDriver.documentSerialNumber}
+			<p class="mb-4 text-sm">
+				<strong>Numer dokumentu:</strong>
+				{selectedDriver.documentSerialNumber}
 			</p>
-			
+
 			{#if getVerificationHistory(selectedDriver).length === 0}
 				<div class="alert alert-info">
 					<svg
@@ -266,9 +267,12 @@
 									{verification.isValid ? '✅ Ważne' : '❌ Nieważne'}
 								</div>
 								{#if verification.data}
-									<div class="text-sm mt-2">
+									<div class="mt-2 text-sm">
 										{#if verification.data.drivingLicenceNumber}
-											<p><strong>Numer prawa jazdy:</strong> {verification.data.drivingLicenceNumber}</p>
+											<p>
+												<strong>Numer prawa jazdy:</strong>
+												{verification.data.drivingLicenceNumber}
+											</p>
 										{/if}
 										{#if verification.data.issueDate}
 											<p><strong>Data wydania:</strong> {verification.data.issueDate}</p>
@@ -289,11 +293,16 @@
 					{/each}
 				</ul>
 			{/if}
-			
+
 			<div class="modal-action">
 				<button class="btn" onclick={closeHistoryModal}>Zamknij</button>
 			</div>
 		</div>
-		<button type="button" class="modal-backdrop" onclick={closeHistoryModal} aria-label="Zamknij modal"></button>
+		<button
+			type="button"
+			class="modal-backdrop"
+			onclick={closeHistoryModal}
+			aria-label="Zamknij modal"
+		></button>
 	</div>
 {/if}

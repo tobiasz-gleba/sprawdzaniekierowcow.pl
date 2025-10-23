@@ -1,17 +1,18 @@
 #!/usr/bin/env bun
 /**
  * CLI tool to validate all drivers in the database
- * 
+ *
  * Usage:
  *   bun run scripts/validate-all-drivers.ts
  *   or
  *   tsx scripts/validate-all-drivers.ts
- * 
+ *
  * Options:
- *   --user-id <id>     Only validate drivers for a specific user
- *   --status <status>  Only validate drivers with specific status (0=invalid, 1=valid, 2=pending)
- *   --delay <ms>       Delay between validations in milliseconds (default: 2000)
- *   --dry-run          Show what would be validated without actually validating
+ *   --user-id <id>       Only validate drivers for a specific user
+ *   --status <status>    Only validate drivers with specific status (0=invalid, 1=valid, 2=pending)
+ *   --delay <ms>         Delay between validations in milliseconds (default: 2000)
+ *   --concurrency <num>  Maximum concurrent validations (default: 1, max: 3)
+ *   --dry-run            Show what would be validated without actually validating
  */
 
 import { drizzle } from 'drizzle-orm/mysql2';
@@ -19,6 +20,7 @@ import mysql from 'mysql2/promise';
 import * as table from '../src/lib/server/db/schema.js';
 import { eq } from 'drizzle-orm';
 import { validateDriverStatus } from '../src/lib/server/driverLicenceValidator.js';
+import { browserPool } from '../src/lib/server/browserPool.js';
 
 // Create standalone database connection
 const DB_HOST = process.env.DB_HOST || 'localhost';
@@ -34,6 +36,7 @@ interface CliOptions {
 	userId?: string;
 	status?: number;
 	delay: number;
+	concurrency: number;
 	dryRun: boolean;
 }
 
@@ -42,18 +45,22 @@ function parseArgs(): CliOptions {
 	const args = process.argv.slice(2);
 	const options: CliOptions = {
 		delay: 2000,
+		concurrency: 1,
 		dryRun: false
 	};
 
 	for (let i = 0; i < args.length; i++) {
 		const arg = args[i];
-		
+
 		if (arg === '--user-id' && i + 1 < args.length) {
 			options.userId = args[++i];
 		} else if (arg === '--status' && i + 1 < args.length) {
 			options.status = parseInt(args[++i]);
 		} else if (arg === '--delay' && i + 1 < args.length) {
 			options.delay = parseInt(args[++i]);
+		} else if (arg === '--concurrency' && i + 1 < args.length) {
+			const concurrency = parseInt(args[++i]);
+			options.concurrency = Math.min(Math.max(concurrency, 1), 3); // Clamp between 1 and 3
 		} else if (arg === '--dry-run') {
 			options.dryRun = true;
 		} else if (arg === '--help' || arg === '-h') {
@@ -61,11 +68,12 @@ function parseArgs(): CliOptions {
 Usage: bun run scripts/validate-all-drivers.ts [options]
 
 Options:
-  --user-id <id>     Only validate drivers for a specific user
-  --status <status>  Only validate drivers with specific status (0=invalid, 1=valid, 2=pending)
-  --delay <ms>       Delay between validations in milliseconds (default: 2000)
-  --dry-run          Show what would be validated without actually validating
-  --help, -h         Show this help message
+  --user-id <id>       Only validate drivers for a specific user
+  --status <status>    Only validate drivers with specific status (0=invalid, 1=valid, 2=pending)
+  --delay <ms>         Delay between validations in milliseconds (default: 2000)
+  --concurrency <num>  Maximum concurrent validations (default: 1, max: 3)
+  --dry-run            Show what would be validated without actually validating
+  --help, -h           Show this help message
 			`);
 			process.exit(0);
 		}
@@ -77,10 +85,14 @@ Options:
 // Format status as human-readable string
 function formatStatus(status: number): string {
 	switch (status) {
-		case 0: return 'INVALID';
-		case 1: return 'VALID';
-		case 2: return 'PENDING';
-		default: return 'UNKNOWN';
+		case 0:
+			return 'INVALID';
+		case 1:
+			return 'VALID';
+		case 2:
+			return 'PENDING';
+		default:
+			return 'UNKNOWN';
 	}
 }
 
@@ -92,8 +104,11 @@ async function main() {
 
 	console.log('Options:');
 	console.log(`  User ID filter: ${options.userId || 'All users'}`);
-	console.log(`  Status filter: ${options.status !== undefined ? formatStatus(options.status) : 'All statuses'}`);
+	console.log(
+		`  Status filter: ${options.status !== undefined ? formatStatus(options.status) : 'All statuses'}`
+	);
 	console.log(`  Delay: ${options.delay}ms`);
+	console.log(`  Concurrency: ${options.concurrency}`);
 	console.log(`  Mode: ${options.dryRun ? 'DRY RUN' : 'LIVE'}`);
 	console.log('');
 
@@ -101,11 +116,11 @@ async function main() {
 	let query = db.select().from(table.driver);
 
 	if (options.userId) {
-		query = query.where(eq(table.driver.userId, options.userId)) as any;
+		query = query.where(eq(table.driver.userId, options.userId)) as typeof query;
 	}
 
 	if (options.status !== undefined) {
-		query = query.where(eq(table.driver.status, options.status)) as any;
+		query = query.where(eq(table.driver.status, options.status)) as typeof query;
 	}
 
 	// Fetch drivers
@@ -131,16 +146,16 @@ async function main() {
 		process.exit(0);
 	}
 
-	// Validate each driver
+	// Validate each driver with concurrency control
 	let validCount = 0;
 	let invalidCount = 0;
 	let errorCount = 0;
 
 	console.log('🔍 Starting validation...\n');
 
-	for (let i = 0; i < drivers.length; i++) {
-		const driver = drivers[i];
-		const progress = `[${i + 1}/${drivers.length}]`;
+	// Function to validate a single driver
+	async function validateDriver(driver: (typeof drivers)[0], index: number) {
+		const progress = `[${index + 1}/${drivers.length}]`;
 		const timestamp = new Date().toISOString();
 		const startTime = Date.now();
 
@@ -154,10 +169,7 @@ async function main() {
 
 		try {
 			// Set status to pending
-			await db
-				.update(table.driver)
-				.set({ status: 2 })
-				.where(eq(table.driver.id, driver.id));
+			await db.update(table.driver).set({ status: 2 }).where(eq(table.driver.id, driver.id));
 			console.log(`  ├─ Status set to PENDING`);
 
 			// Validate the driver
@@ -195,19 +207,57 @@ async function main() {
 
 			// Mark as invalid on error
 			try {
-				await db
-					.update(table.driver)
-					.set({ status: 0 })
-					.where(eq(table.driver.id, driver.id));
+				await db.update(table.driver).set({ status: 0 }).where(eq(table.driver.id, driver.id));
 			} catch (updateError) {
 				console.error(`  Failed to update status: ${updateError}`);
 			}
 		}
+	}
 
-		// Delay between validations to avoid overwhelming the API
-		if (i < drivers.length - 1 && options.delay > 0) {
-			await new Promise(resolve => setTimeout(resolve, options.delay));
+	// Process drivers with concurrency control
+	if (options.concurrency === 1) {
+		// Sequential processing (original behavior)
+		for (let i = 0; i < drivers.length; i++) {
+			await validateDriver(drivers[i], i);
+
+			// Delay between validations to avoid overwhelming the API
+			if (i < drivers.length - 1 && options.delay > 0) {
+				await new Promise((resolve) => setTimeout(resolve, options.delay));
+			}
 		}
+	} else {
+		// Concurrent processing with limit
+		const promises: Promise<void>[] = [];
+		let currentIndex = 0;
+
+		while (currentIndex < drivers.length) {
+			// Start up to 'concurrency' validations
+			while (promises.length < options.concurrency && currentIndex < drivers.length) {
+				const index = currentIndex;
+				const promise = validateDriver(drivers[index], index).then(async () => {
+					// Remove completed promise from array
+					const idx = promises.indexOf(promise);
+					if (idx > -1) {
+						promises.splice(idx, 1);
+					}
+
+					// Add delay after each validation
+					if (options.delay > 0) {
+						await new Promise((resolve) => setTimeout(resolve, options.delay));
+					}
+				});
+				promises.push(promise);
+				currentIndex++;
+			}
+
+			// Wait for at least one to complete before starting more
+			if (promises.length > 0) {
+				await Promise.race(promises);
+			}
+		}
+
+		// Wait for all remaining validations to complete
+		await Promise.all(promises);
 	}
 
 	// Print summary
@@ -221,8 +271,11 @@ async function main() {
 	console.log('='.repeat(60));
 	console.log('\n✨ Validation complete!');
 
-	// Close database connection
+	// Clean up resources
+	console.log('\n🧹 Cleaning up...');
+	await browserPool.forceClose();
 	await client.end();
+	console.log('✅ Cleanup complete!');
 }
 
 // Run the CLI
@@ -234,4 +287,3 @@ main()
 		console.error('\n❌ Fatal error:', error);
 		process.exit(1);
 	});
-

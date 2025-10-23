@@ -36,7 +36,7 @@ export const handle: Handle = handleAuth;
 
 export const handleError: HandleServerError = async ({ error, event, status, message }) => {
 	const errorId = crypto.randomUUID();
-	
+
 	// Log minimal error info in production, detailed in development
 	if (process.env.NODE_ENV === 'production') {
 		console.error(`[ERROR ${errorId}] ${status} - ${event.url.pathname}`);
@@ -50,7 +50,7 @@ export const handleError: HandleServerError = async ({ error, event, status, mes
 		console.error(`Method: ${event.request.method}`);
 		console.error(`User: ${event.locals.user?.id || 'Not authenticated'}`);
 		console.error('Headers:', Object.fromEntries(event.request.headers.entries()));
-		
+
 		if (error instanceof Error) {
 			console.error('Error name:', error.name);
 			console.error('Error message:', error.message);
@@ -58,14 +58,15 @@ export const handleError: HandleServerError = async ({ error, event, status, mes
 		} else {
 			console.error('Error object:', error);
 		}
-		
+
 		console.error('='.repeat(80));
 	}
 
 	return {
-		message: process.env.NODE_ENV === 'production' 
-			? 'An error occurred. Please try again later.' 
-			: message,
+		message:
+			process.env.NODE_ENV === 'production'
+				? 'An error occurred. Please try again later.'
+				: message,
 		errorId
 	};
 };

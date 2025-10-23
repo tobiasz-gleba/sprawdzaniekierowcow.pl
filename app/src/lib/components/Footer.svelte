@@ -25,7 +25,9 @@
 	<nav>
 		<h6 class="footer-title">POMOC</h6>
 		<div class="flex flex-col gap-2">
-			<a href="https://github.com/tobiasz-gleba/sprawdzaniekierowcow.pl" class="link link-hover">GitHub</a>
+			<a href="https://github.com/tobiasz-gleba/sprawdzaniekierowcow.pl" class="link link-hover"
+				>GitHub</a
+			>
 			<a href="/privacy-policy" class="link link-hover">Polityka prywatności</a>
 			<a href="/terms-of-service" class="link link-hover">Warunki użytkowania</a>
 			<a href="mailto:contact@sprawdzaniekierowcow.pl" class="link link-hover">Kontakt</a>

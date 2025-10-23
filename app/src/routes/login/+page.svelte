@@ -12,27 +12,30 @@
 </script>
 
 <div class="hero min-h-screen bg-gradient-to-br from-base-200 to-base-300">
-	<div class="hero-content flex-col lg:flex-row-reverse gap-8 w-full max-w-6xl px-4">
+	<div class="hero-content w-full max-w-6xl flex-col gap-8 px-4 lg:flex-row-reverse">
 		<!-- Info Section -->
-		<div class="text-center lg:text-left lg:w-1/2">
-			<div class="badge badge-primary badge-lg mb-4">Monitorowanie Kierowców</div>
-			<h1 class="text-5xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+		<div class="text-center lg:w-1/2 lg:text-left">
+			<div class="mb-4 badge badge-lg badge-primary">Monitorowanie Kierowców</div>
+			<h1
+				class="bg-gradient-to-r from-primary to-secondary bg-clip-text text-5xl font-bold text-transparent"
+			>
 				Hi!
 			</h1>
 			<p class="py-6 text-lg text-base-content/80">
-				Otrzymuj powiadomienia jeśli kierowca straci prawko, albo utracił uprawnienia z innych powodów. Oszczędzaj czas na automatyzacji.
+				Otrzymuj powiadomienia jeśli kierowca straci prawko, albo utracił uprawnienia z innych
+				powodów. Oszczędzaj czas na automatyzacji.
 			</p>
-			<div class="flex flex-col gap-3 mt-4">
+			<div class="mt-4 flex flex-col gap-3">
 				<div class="flex items-center gap-3">
-					<div class="badge badge-success badge-sm">✓</div>
+					<div class="badge badge-sm badge-success">✓</div>
 					<span class="text-base-content/70">Powiadomienia na email</span>
 				</div>
 				<div class="flex items-center gap-3">
-					<div class="badge badge-success badge-sm">✓</div>
+					<div class="badge badge-sm badge-success">✓</div>
 					<span class="text-base-content/70">Import danych z pliku CSV</span>
 				</div>
 				<div class="flex items-center gap-3">
-					<div class="badge badge-success badge-sm">✓</div>
+					<div class="badge badge-sm badge-success">✓</div>
 					<span class="text-base-content/70">Open source on GitHub</span>
 				</div>
 			</div>
@@ -41,16 +44,27 @@
 		<!-- Form Section -->
 		<div class="card w-full max-w-md shrink-0 bg-base-100 shadow-2xl lg:w-1/2">
 			<div class="card-body">
-			<!-- Tabs -->
-			<div class="tabs tabs-boxed mb-4 w-full">
-				<button
-					type="button"
-					class="tab flex-1"
-					class:tab-active={activeAction === 'login'}
-					onclick={() => (activeAction = 'login')}
-				>
-						<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+				<!-- Tabs -->
+				<div class="tabs-boxed mb-4 tabs w-full">
+					<button
+						type="button"
+						class="tab flex-1"
+						class:tab-active={activeAction === 'login'}
+						onclick={() => (activeAction = 'login')}
+					>
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							class="mr-2 h-4 w-4"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke="currentColor"
+						>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+							/>
 						</svg>
 						Logowanie
 					</button>
@@ -60,8 +74,19 @@
 						class:tab-active={activeAction === 'register'}
 						onclick={() => (activeAction = 'register')}
 					>
-						<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							class="mr-2 h-4 w-4"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke="currentColor"
+						>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+							/>
 						</svg>
 						Rejestracja
 					</button>
@@ -84,7 +109,7 @@
 				>
 					<!-- Success Alert -->
 					{#if resetSuccess}
-						<div role="alert" class="alert alert-success mb-4">
+						<div role="alert" class="mb-4 alert alert-success">
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
 								class="h-6 w-6 shrink-0 stroke-current"
@@ -104,7 +129,10 @@
 
 					<!-- Form Alert -->
 					{#if form?.message}
-						<div role="alert" class={`alert mb-4 ${form.success ? 'alert-success' : 'alert-error'}`}>
+						<div
+							role="alert"
+							class={`mb-4 alert ${form.success ? 'alert-success' : 'alert-error'}`}
+						>
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
 								class="h-5 w-5 shrink-0 stroke-current"
@@ -131,12 +159,12 @@
 						</div>
 					{/if}
 
-				<!-- Email Field -->
-				<div class="form-control w-full mt-2">
-					<label class="label" for="email">
-						<span class="label-text font-semibold">Email</span>
-					</label>
-					<label class="input input-bordered flex items-center gap-2 w-full">
+					<!-- Email Field -->
+					<div class="form-control mt-2 w-full">
+						<label class="label" for="email">
+							<span class="label-text font-semibold">Email</span>
+						</label>
+						<label class="input-bordered input flex w-full items-center gap-2">
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
 								viewBox="0 0 16 16"
@@ -162,12 +190,12 @@
 						</label>
 					</div>
 
-				<!-- Password Field -->
-				<div class="form-control w-full mt-6">
-					<label class="label" for="password">
-						<span class="label-text font-semibold">Hasło</span>
-					</label>
-					<label class="input input-bordered flex items-center gap-2 w-full">
+					<!-- Password Field -->
+					<div class="form-control mt-6 w-full">
+						<label class="label" for="password">
+							<span class="label-text font-semibold">Hasło</span>
+						</label>
+						<label class="input-bordered input flex w-full items-center gap-2">
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
 								viewBox="0 0 16 16"
@@ -194,7 +222,7 @@
 						{#if activeAction === 'login'}
 							<div class="label">
 								<span class="label-text-alt"></span>
-								<a href="/forgot-password" class="label-text-alt link link-hover link-primary">
+								<a href="/forgot-password" class="label-text-alt link link-primary link-hover">
 									Zapomniałeś hasła?
 								</a>
 							</div>
@@ -205,38 +233,65 @@
 						{/if}
 					</div>
 
-				<!-- Terms and Privacy Policy Acceptance (only for registration) -->
-				{#if activeAction === 'register'}
-					<div class="form-control mt-6">
-						<label class="label cursor-pointer justify-start gap-3">
-							<input
-								type="checkbox"
-								name="acceptTerms"
-								class="checkbox checkbox-primary"
-								required
-							/>
-							<span class="label-text">
-								Akceptuję <a href="/terms-of-service" target="_blank" class="link link-primary">Warunki Użytkowania</a> 
-								oraz <a href="/privacy-policy" target="_blank" class="link link-primary">Politykę Prywatności</a>
-							</span>
-						</label>
-					</div>
-				{/if}
+					<!-- Terms and Privacy Policy Acceptance (only for registration) -->
+					{#if activeAction === 'register'}
+						<div class="form-control mt-6">
+							<label class="label cursor-pointer justify-start gap-3">
+								<input
+									type="checkbox"
+									name="acceptTerms"
+									class="checkbox checkbox-primary"
+									required
+								/>
+								<span class="label-text">
+									Akceptuję <a href="/terms-of-service" target="_blank" class="link link-primary"
+										>Warunki Użytkowania</a
+									>
+									oraz
+									<a href="/privacy-policy" target="_blank" class="link link-primary"
+										>Politykę Prywatności</a
+									>
+								</span>
+							</label>
+						</div>
+					{/if}
 
-				<!-- Submit Button -->
-				<div class="form-control w-full mt-8">
-					<button type="submit" class="btn btn-primary w-full" disabled={isLoading}>
+					<!-- Submit Button -->
+					<div class="form-control mt-8 w-full">
+						<button type="submit" class="btn w-full btn-primary" disabled={isLoading}>
 							{#if isLoading}
 								<span class="loading loading-spinner"></span>
 								Przetwarzanie...
 							{:else if activeAction === 'login'}
-								<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									class="mr-2 h-5 w-5"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke="currentColor"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+									/>
 								</svg>
 								Zaloguj się
 							{:else}
-								<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									class="mr-2 h-5 w-5"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke="currentColor"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+									/>
 								</svg>
 								Utwórz konto
 							{/if}
@@ -246,7 +301,7 @@
 					<!-- Additional Links -->
 					<div class="divider text-xs">Potrzebujesz pomocy?</div>
 					<div class="text-center">
-						<a href="/resend-verification" class="link link-hover text-sm">
+						<a href="/resend-verification" class="link text-sm link-hover">
 							Nie otrzymałeś emaila weryfikacyjnego?
 						</a>
 					</div>

@@ -19,7 +19,9 @@
 		"db:studio": "drizzle-kit studio",
 		"validate:all": "tsx scripts/validate-all-drivers.ts",
 		"validate:pending": "tsx scripts/validate-all-drivers.ts --status 2",
-		"notify:invalid": "tsx scripts/notify-invalid-drivers.ts"
+		"notify:invalid": "tsx scripts/notify-invalid-drivers.ts",
+		"mark:all": "tsx scripts/mark-for-validation.ts",
+		"worker:validate": "tsx scripts/validation-worker.ts"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.4.0",

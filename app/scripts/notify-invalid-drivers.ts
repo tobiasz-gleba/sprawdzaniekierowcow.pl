@@ -1,12 +1,12 @@
 #!/usr/bin/env bun
 /**
  * CLI tool to send email notifications to users with invalid drivers
- * 
+ *
  * Usage:
  *   bun run scripts/notify-invalid-drivers.ts
  *   or
  *   tsx scripts/notify-invalid-drivers.ts
- * 
+ *
  * Options:
  *   --user-id <id>   Only send notification to a specific user
  *   --dry-run        Show what emails would be sent without actually sending them
@@ -35,7 +35,7 @@ interface CliOptions {
 
 interface UserWithInvalidDrivers {
 	user: typeof table.user.$inferSelect;
-	invalidDrivers: typeof table.driver.$inferSelect[];
+	invalidDrivers: (typeof table.driver.$inferSelect)[];
 }
 
 // Parse command line arguments
@@ -47,7 +47,7 @@ function parseArgs(): CliOptions {
 
 	for (let i = 0; i < args.length; i++) {
 		const arg = args[i];
-		
+
 		if (arg === '--user-id' && i + 1 < args.length) {
 			options.userId = args[++i];
 		} else if (arg === '--dry-run') {
@@ -74,7 +74,7 @@ function getEmailConfig() {
 	const EMAIL_PASS = process.env.EMAIL_PASS;
 	const SMTP_HOST = process.env.SMTP_HOST;
 	const SMTP_PORT = process.env.SMTP_PORT;
-	
+
 	if (!EMAIL_USER || !EMAIL_PASS || !SMTP_HOST) {
 		throw new Error(
 			'Missing required SMTP environment variables: EMAIL_USER, EMAIL_PASS, SMTP_HOST'
@@ -111,12 +111,12 @@ function getBaseUrl(): string {
 // Send email notification about invalid drivers
 async function sendInvalidDriversNotification(
 	email: string,
-	invalidDrivers: typeof table.driver.$inferSelect[],
+	invalidDrivers: (typeof table.driver.$inferSelect)[],
 	dryRun: boolean = false
 ) {
 	const { EMAIL_USER } = getEmailConfig();
 	const dashboardUrl = `${getBaseUrl()}/dashboard`;
-	
+
 	// Build driver list
 	const driverList = invalidDrivers
 		.map((driver) => `• ${driver.name} ${driver.surname} (${driver.documentSerialNumber})`)
@@ -266,43 +266,36 @@ async function fetchUsersWithInvalidDrivers(
 	options: CliOptions
 ): Promise<UserWithInvalidDrivers[]> {
 	console.log('📊 Fetching users with invalid drivers from database...');
-	
+
 	// Fetch all invalid drivers (status = 0)
-	let query = db
-		.select()
-		.from(table.driver)
-		.where(eq(table.driver.status, 0));
-	
+	let query = db.select().from(table.driver).where(eq(table.driver.status, 0));
+
 	if (options.userId) {
-		query = query.where(and(
-			eq(table.driver.status, 0),
-			eq(table.driver.userId, options.userId)
-		)) as any;
+		query = query.where(
+			and(eq(table.driver.status, 0), eq(table.driver.userId, options.userId))
+		) as typeof query;
 	}
-	
+
 	const invalidDrivers = await query;
-	
+
 	if (invalidDrivers.length === 0) {
 		return [];
 	}
-	
+
 	// Group drivers by user ID
-	const driversByUser = new Map<string, typeof table.driver.$inferSelect[]>();
+	const driversByUser = new Map<string, (typeof table.driver.$inferSelect)[]>();
 	for (const driver of invalidDrivers) {
 		const userDrivers = driversByUser.get(driver.userId) || [];
 		userDrivers.push(driver);
 		driversByUser.set(driver.userId, userDrivers);
 	}
-	
+
 	// Fetch user information for each user with invalid drivers
 	const usersWithInvalidDrivers: UserWithInvalidDrivers[] = [];
-	
+
 	for (const [userId, drivers] of driversByUser.entries()) {
-		const users = await db
-			.select()
-			.from(table.user)
-			.where(eq(table.user.id, userId));
-		
+		const users = await db.select().from(table.user).where(eq(table.user.id, userId));
+
 		if (users.length > 0) {
 			usersWithInvalidDrivers.push({
 				user: users[0],
@@ -310,7 +303,7 @@ async function fetchUsersWithInvalidDrivers(
 			});
 		}
 	}
-	
+
 	return usersWithInvalidDrivers;
 }
 
@@ -327,7 +320,7 @@ async function main() {
 
 	// Fetch users with invalid drivers
 	const usersWithInvalidDrivers = await fetchUsersWithInvalidDrivers(options);
-	
+
 	console.log(`Found ${usersWithInvalidDrivers.length} user(s) with invalid drivers\n`);
 
 	if (usersWithInvalidDrivers.length === 0) {
@@ -341,7 +334,7 @@ async function main() {
 	usersWithInvalidDrivers.forEach((item, index) => {
 		console.log(`  ${index + 1}. User: ${item.user.email} (ID: ${item.user.id})`);
 		console.log(`     Invalid drivers: ${item.invalidDrivers.length}`);
-		item.invalidDrivers.forEach(driver => {
+		item.invalidDrivers.forEach((driver) => {
 			console.log(`       - ${driver.name} ${driver.surname} (${driver.documentSerialNumber})`);
 		});
 	});
@@ -355,31 +348,27 @@ async function main() {
 
 	// Send notifications
 	console.log('📧 Sending email notifications...\n');
-	
+
 	let successCount = 0;
 	let errorCount = 0;
 
 	for (let i = 0; i < usersWithInvalidDrivers.length; i++) {
 		const item = usersWithInvalidDrivers[i];
 		const progress = `[${i + 1}/${usersWithInvalidDrivers.length}]`;
-		
+
 		console.log(`${progress} Sending notification to: ${item.user.email}`);
 		console.log(`  ├─ User ID: ${item.user.id}`);
 		console.log(`  ├─ Invalid drivers count: ${item.invalidDrivers.length}`);
 
 		try {
-			await sendInvalidDriversNotification(
-				item.user.email,
-				item.invalidDrivers,
-				options.dryRun
-			);
+			await sendInvalidDriversNotification(item.user.email, item.invalidDrivers, options.dryRun);
 			successCount++;
 		} catch (error) {
 			errorCount++;
 			console.error(`${progress} ⚠️  ERROR sending to ${item.user.email}`);
 			console.error(`  └─ Error: ${error instanceof Error ? error.message : String(error)}\n`);
 		}
-		
+
 		console.log('');
 	}
 
@@ -406,4 +395,3 @@ main()
 		console.error('\n❌ Fatal error:', error);
 		process.exit(1);
 	});
-

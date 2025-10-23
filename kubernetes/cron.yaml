@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: validate-all-drivers
+  name: mark-all-for-validation
   namespace: sprawdzaniekierowcow
   labels:
     app: sprawdzaniekierowcow
@@ -20,9 +20,9 @@ spec:
         spec:
           restartPolicy: OnFailure
           containers:
-          - name: validate-all
+          - name: mark-all
             image: ghcr.io/tobiasz-gleba/sprawdzaniekierowcow.pl:20251023125042 # {"$imagepolicy": "sprawdzaniekierowcow:sprawdzaniekierowcow"}
-            command: ["npm", "run", "validate:all"]
+            command: ["npm", "run", "mark:all"]
             workingDir: /app
             env:
             - name: DB_HOST
@@ -37,27 +37,13 @@ spec:
                   name: github-settings
                   key: SHARED_DB_PASSWORD
                   optional: false
-            - name: PUBLIC_BASE_URL
-              value: https://sprawdzaniekierowcow.pl
-            - name: EMAIL_USER
-              value: kontakt@sprawdzaniekierowcow.pl
-            - name: EMAIL_PASS
-              valueFrom:
-                secretKeyRef:
-                  name: github-settings
-                  key: MAIL_PASSWORD_SPRAWDZANIEKIEROWCOW
-                  optional: false
-            - name: SMTP_HOST
-              value: smtp.iq.pl
-            - name: SMTP_PORT
-              value: "587"
             resources:
               limits:
-                memory: "512Mi"
-                cpu: "1000m"
+                memory: "256Mi"
+                cpu: "250m"
               requests:
-                memory: "128Mi"
-                cpu: "100m"
+                memory: "64Mi"
+                cpu: "50m"
 ---
 apiVersion: batch/v1
 kind: CronJob
@@ -114,8 +100,8 @@ spec:
               value: "587"
             resources:
               limits:
-                memory: "256Mi"
+                memory: "1Gi"
                 cpu: "500m"
               requests:
-                memory: "64Mi"
-                cpu: "50m"
+                memory: "256Mi"
+                cpu: "100m"

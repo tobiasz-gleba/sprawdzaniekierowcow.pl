@@ -11,6 +11,7 @@ This directory contains CLI scripts for managing and maintaining the driver lice
 Validates all or selected drivers in the database by checking their license status with the external API.
 
 **Usage:**
+
 ```bash
 # Validate all drivers
 bun run scripts/validate-all-drivers.ts
@@ -31,13 +32,25 @@ bun run scripts/validate-all-drivers.ts --dry-run
 
 # Custom delay between validations (default: 2000ms)
 bun run scripts/validate-all-drivers.ts --delay 3000
+
+# Enable concurrent validations (default: 1, max: 3)
+bun run scripts/validate-all-drivers.ts --concurrency 2
 ```
 
 **Options:**
+
 - `--user-id <id>` - Only validate drivers for a specific user
 - `--status <status>` - Only validate drivers with specific status (0=invalid, 1=valid, 2=pending)
 - `--delay <ms>` - Delay between validations in milliseconds (default: 2000)
+- `--concurrency <num>` - Maximum concurrent validations (default: 1, max: 3)
 - `--dry-run` - Show what would be validated without actually validating
+
+**Performance & Resource Management:**
+
+- The script now uses a browser pool to reuse browser instances, significantly reducing memory consumption
+- Concurrency is limited to a maximum of 3 to prevent resource exhaustion
+- Each validation uses a separate browser context (not a new browser instance)
+- Browser instances are automatically cleaned up after the script completes
 
 ---
 
@@ -48,6 +61,7 @@ bun run scripts/validate-all-drivers.ts --delay 3000
 Sends email notifications to users who have drivers with invalid status. This script excludes drivers with pending status and only notifies about confirmed invalid licenses.
 
 **Usage:**
+
 ```bash
 # Send notifications to all users with invalid drivers
 bun run scripts/notify-invalid-drivers.ts
@@ -62,11 +76,13 @@ bun run scripts/notify-invalid-drivers.ts --dry-run
 ```
 
 **Options:**
+
 - `--user-id <id>` - Only send notification to a specific user
 - `--dry-run` - Show what emails would be sent without actually sending them
 
 **Email Content:**
 The notification email includes:
+
 - A warning about invalid driver licenses
 - A list of all invalid drivers (name, surname, document number)
 - Information about what "invalid" status means
@@ -79,12 +95,14 @@ The notification email includes:
 All scripts require the following environment variables:
 
 ### Database Configuration
+
 - `DB_HOST` - MySQL database host (default: localhost)
 - `DB_NAME` - Database name (default: sprawdzaniekierowcow)
 - `DB_USERNAME` - Database username (default: root)
 - `DB_PASSWORD` - Database password (default: password)
 
 ### Email Configuration (for notify-invalid-drivers.ts)
+
 - `EMAIL_USER` - SMTP username/email address
 - `EMAIL_PASS` - SMTP password
 - `SMTP_HOST` - SMTP server host
@@ -100,11 +118,13 @@ These scripts can be automated using cron jobs or Kubernetes CronJobs:
 ### Example: Daily validation and notification flow
 
 1. Validate all pending drivers (every 6 hours):
+
 ```bash
 0 */6 * * * cd /path/to/app && bun run scripts/validate-all-drivers.ts --status 2
 ```
 
 2. Send notifications to users with invalid drivers (once daily at 9 AM):
+
 ```bash
 0 9 * * * cd /path/to/app && bun run scripts/notify-invalid-drivers.ts
 ```
@@ -118,8 +138,16 @@ See `kubernetes/cron.yaml` for Kubernetes CronJob configuration examples.
 ## Notes
 
 - The `validate-all-drivers.ts` script includes a delay between validations to avoid overwhelming the external API (default: 2000ms)
+- The validation script uses browser pooling to reduce memory consumption - a single browser instance is reused across all validations
+- Maximum concurrency is limited to 3 concurrent validations to prevent resource exhaustion
 - The `notify-invalid-drivers.ts` script groups drivers by user and sends one email per user (not one per driver)
 - Both scripts support `--dry-run` mode for testing without making actual changes
 - All scripts output detailed logs for monitoring and debugging
 - Scripts use standalone database connections and can be run independently of the web application
 
+## Resource Requirements
+
+- **validate-all-drivers.ts**: Requires at least 512Mi memory (2Gi recommended) due to Chromium browser usage
+- **notify-invalid-drivers.ts**: Requires minimal memory (256Mi sufficient)
+- Browser instances are optimized with flags to reduce memory consumption
+- All resources are properly cleaned up when scripts complete or encounter errors

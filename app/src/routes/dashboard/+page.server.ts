@@ -4,7 +4,7 @@ import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
 import { eq, desc, and, asc } from 'drizzle-orm';
 import type { Actions, PageServerLoad } from './$types';
-import { scheduleValidation, scheduleBatchValidation, revalidateDriver } from '$lib/server/backgroundValidator';
+import { revalidateDriver } from '$lib/server/backgroundValidator';
 
 export const load: PageServerLoad = async (event) => {
 	// Require authentication
@@ -62,21 +62,18 @@ export const actions: Actions = {
 
 		try {
 			// Insert driver with pending status (2)
-			const result = await db.insert(table.driver).values({
+			// Worker will automatically pick it up for validation
+			await db.insert(table.driver).values({
 				name: name.trim(),
 				surname: surname.trim(),
 				documentSerialNumber: documentSerialNumber.trim(),
-				status: 2, // pending
+				status: 2, // pending - will be processed by validation worker
 				userId: event.locals.user.id,
 				createdAt: new Date()
 			});
 
-			// Schedule background validation
-			const insertId = Number(result[0].insertId);
-			scheduleValidation(insertId);
-
 			return { success: true };
-		} catch (error) {
+		} catch {
 			return fail(500, { message: 'Failed to add driver' });
 		}
 	},
@@ -111,14 +108,15 @@ export const actions: Actions = {
 		}
 
 		try {
-			// Update with pending status and schedule background validation
+			// Update driver and set status to pending
+			// Worker will automatically pick it up for validation
 			await db
 				.update(table.driver)
 				.set({
 					name: name.trim(),
 					surname: surname.trim(),
 					documentSerialNumber: documentSerialNumber.trim(),
-					status: 2 // pending
+					status: 2 // pending - will be processed by validation worker
 				})
 				.where(
 					and(
@@ -127,11 +125,8 @@ export const actions: Actions = {
 					)
 				);
 
-			// Schedule background validation
-			scheduleValidation(parseInt(driverId));
-
 			return { success: true };
-		} catch (error) {
+		} catch {
 			return fail(500, { message: 'Failed to update driver' });
 		}
 	},
@@ -159,7 +154,7 @@ export const actions: Actions = {
 				);
 
 			return { success: true };
-		} catch (error) {
+		} catch {
 			return fail(500, { message: 'Failed to delete driver' });
 		}
 	},
@@ -191,7 +186,6 @@ export const actions: Actions = {
 			const dataLines = lines.slice(1);
 			let successCount = 0;
 			let errorCount = 0;
-			const insertedIds: number[] = [];
 
 			for (const line of dataLines) {
 				// Parse CSV line (simple implementation)
@@ -211,34 +205,27 @@ export const actions: Actions = {
 				}
 
 				try {
-					// Insert with pending status
-					const result = await db.insert(table.driver).values({
+					// Insert with pending status - worker will automatically pick up for validation
+					await db.insert(table.driver).values({
 						name: name.trim(),
 						surname: surname.trim(),
 						documentSerialNumber: documentSerialNumber.trim(),
-						status: 2, // pending
+						status: 2, // pending - will be processed by validation worker
 						userId: event.locals.user.id,
 						createdAt: new Date()
 					});
 
-					const insertId = Number(result[0].insertId);
-					insertedIds.push(insertId);
 					successCount++;
-				} catch (error) {
+				} catch {
 					errorCount++;
 				}
 			}
 
-			// Schedule batch validation in the background
-			if (insertedIds.length > 0) {
-				scheduleBatchValidation(insertedIds);
-			}
-
 			return {
 				importSuccess: true,
-				importMessage: `Successfully imported ${successCount} driver(s)${errorCount > 0 ? `, ${errorCount} failed` : ''}. Validation in progress...`
+				importMessage: `Successfully imported ${successCount} driver(s)${errorCount > 0 ? `, ${errorCount} failed` : ''}. Validation will be processed by worker...`
 			};
-		} catch (error) {
+		} catch {
 			return fail(500, { importError: true, importMessage: 'Failed to process CSV file' });
 		}
 	},
@@ -274,11 +261,11 @@ export const actions: Actions = {
 			// Re-validate the driver
 			const isValid = await revalidateDriver(parseInt(driverId));
 
-			return { 
-				success: true, 
+			return {
+				success: true,
 				message: isValid ? 'Driver is valid' : 'Driver is invalid'
 			};
-		} catch (error) {
+		} catch {
 			return fail(500, { message: 'Failed to revalidate driver' });
 		}
 	},
@@ -292,4 +279,3 @@ export const actions: Actions = {
 		return redirect(302, '/');
 	}
 };
-

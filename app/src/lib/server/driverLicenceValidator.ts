@@ -1,9 +1,10 @@
-import { chromium, type Browser } from 'playwright';
+import { type Browser, type BrowserContext } from 'playwright';
+import { browserPool } from './browserPool';
 
 /**
  * Checks driver license information from the Polish government's
  * Central Driver Registry (Centralna Ewidencja Kierowców - CEK)
- * 
+ *
  * @param name - Driver's first name
  * @param surname - Driver's surname
  * @param documentNumber - Document serial number (e.g., "AA004547")
@@ -15,30 +16,31 @@ export async function checkDriverLicence(
 	documentNumber: string
 ): Promise<any> {
 	let browser: Browser | null = null;
+	let context: BrowserContext | null = null;
 
 	try {
-		// Launch browser in headless mode
-		browser = await chromium.launch({
-			headless: true,
-			args: ['--no-sandbox', '--disable-setuid-sandbox']
-		});
+		// Get browser from pool instead of creating new one
+		browser = await browserPool.getBrowser();
 
-		const context = await browser.newContext({
+		context = await browser.newContext({
 			locale: 'pl-PL',
 			timezoneId: 'Europe/Warsaw',
-			userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+			userAgent:
+				'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
 		});
 
 		const page = await context.newPage();
 
 		// Set up a promise to capture the API response
 		const apiResponsePromise = page.waitForResponse(
-			response => response.url().includes('/data/driver-permissions') && response.status() === 200,
+			(response) =>
+				response.url().includes('/data/driver-permissions') && response.status() === 200,
 			{ timeout: 15000 }
 		);
 
 		// Navigate to the government form
-		const url = 'https://moj.gov.pl/uslugi/engine/ng/index?xFormsAppName=UprawnieniaKierowcow&xFormsOrigin=EXTERNAL';
+		const url =
+			'https://moj.gov.pl/uslugi/engine/ng/index?xFormsAppName=UprawnieniaKierowcow&xFormsOrigin=EXTERNAL';
 		await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
 
 		// Wait for the form to load
@@ -57,23 +59,31 @@ export async function checkDriverLicence(
 		const apiResponse = await apiResponsePromise;
 		const jsonData = await apiResponse.json();
 
-		await browser.close();
-
 		return jsonData;
-
 	} catch (error) {
-		if (browser) {
-			await browser.close();
-		}
 		console.error('Error checking driver licence:', error);
 		return null;
+	} finally {
+		// Close the context (not the browser) to free resources
+		if (context) {
+			try {
+				await context.close();
+			} catch (closeError) {
+				console.error('Error closing browser context:', closeError);
+			}
+		}
+
+		// Release browser back to pool
+		if (browser) {
+			browserPool.releaseBrowser();
+		}
 	}
 }
 
 /**
- * Validates driver status by checking if the document status is "Wydany" 
+ * Validates driver status by checking if the document status is "Wydany"
  * and the expiry date has not passed
- * 
+ *
  * @param name - Driver's first name
  * @param surname - Driver's surname
  * @param documentNumber - Document serial number
@@ -114,7 +124,6 @@ export async function validateDriverStatus(
 
 		// All checks passed
 		return true;
-
 	} catch (error) {
 		console.error('Error validating driver status:', error);
 		return false;
@@ -123,7 +132,7 @@ export async function validateDriverStatus(
 
 /**
  * Validates driver status and returns full result including JSON data
- * 
+ *
  * @param name - Driver's first name
  * @param surname - Driver's surname
  * @param documentNumber - Document serial number
@@ -135,16 +144,16 @@ export async function validateDriverStatusWithData(
 	documentNumber: string
 ): Promise<{ isValid: boolean; data: any; timestamp: string }> {
 	const timestamp = new Date().toISOString();
-	
+
 	try {
 		// Get the driver license data
 		const data = await checkDriverLicence(name, surname, documentNumber);
 
 		if (!data || !data.dokumentPotwierdzajacyUprawnienia) {
-			return { 
-				isValid: false, 
-				data: data || { error: 'No data returned' }, 
-				timestamp 
+			return {
+				isValid: false,
+				data: data || { error: 'No data returned' },
+				timestamp
 			};
 		}
 
@@ -170,14 +179,12 @@ export async function validateDriverStatusWithData(
 
 		// All checks passed
 		return { isValid: true, data, timestamp };
-
 	} catch (error) {
 		console.error('Error validating driver status:', error);
-		return { 
-			isValid: false, 
-			data: { error: String(error) }, 
-			timestamp 
+		return {
+			isValid: false,
+			data: { error: String(error) },
+			timestamp
 		};
 	}
 }
-
