@@ -20,7 +20,6 @@ import mysql from 'mysql2/promise';
 import * as table from '../src/lib/server/db/schema.js';
 import { eq } from 'drizzle-orm';
 import { validateDriverStatusWithData } from '../src/lib/server/driverLicenceValidator.js';
-import { browserPool } from '../src/lib/server/browserPool.js';
 
 // Create standalone database connection
 const DB_HOST = process.env.DB_HOST || 'localhost';
@@ -220,7 +219,6 @@ async function shutdown(signal: string): Promise<void> {
 
 	// Clean up resources
 	console.log('🧹 Cleaning up resources...');
-	await browserPool.forceClose();
 	await client.end();
 	console.log('✅ Cleanup complete');
 

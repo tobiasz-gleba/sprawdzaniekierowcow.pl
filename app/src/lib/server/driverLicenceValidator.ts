@@ -1,9 +1,11 @@
-import { type Browser, type BrowserContext } from 'playwright';
-import { browserPool } from './browserPool';
+import { chromium, type Browser, type BrowserContext } from 'playwright';
 
 /**
  * Checks driver license information from the Polish government's
  * Central Driver Registry (Centralna Ewidencja Kierowców - CEK)
+ *
+ * Worker processes one driver at a time, so we create a fresh browser for each validation.
+ * This is simpler and safer than pooling - no shared state, clean start each time.
  *
  * @param name - Driver's first name
  * @param surname - Driver's surname
@@ -19,8 +21,21 @@ export async function checkDriverLicence(
 	let context: BrowserContext | null = null;
 
 	try {
-		// Get browser from pool instead of creating new one
-		browser = await browserPool.getBrowser();
+		// Create a fresh browser for this validation (worker processes one at a time)
+		browser = await chromium.launch({
+			headless: true,
+			args: [
+				'--no-sandbox',
+				'--disable-setuid-sandbox',
+				'--disable-dev-shm-usage', // Overcome limited resource problems
+				'--disable-accelerated-2d-canvas',
+				'--no-first-run',
+				'--no-zygote',
+				'--disable-gpu',
+				'--disable-software-rasterizer',
+				'--disable-extensions'
+			]
+		});
 
 		context = await browser.newContext({
 			locale: 'pl-PL',
@@ -30,13 +45,6 @@ export async function checkDriverLicence(
 		});
 
 		const page = await context.newPage();
-
-		// Set up a promise to capture the API response with longer timeout
-		const apiResponsePromise = page.waitForResponse(
-			(response) =>
-				response.url().includes('/data/driver-permissions') && response.status() === 200,
-			{ timeout: 60000 } // Increased to 60 seconds
-		);
 
 		// Navigate to the government form with longer timeout
 		const url =
@@ -66,6 +74,14 @@ export async function checkDriverLicence(
 			{ timeout: 15000 }
 		);
 
+		// Set up promise to capture API response ONLY after button is ready
+		// This prevents unhandled promise rejection if validation fails above
+		const apiResponsePromise = page.waitForResponse(
+			(response) =>
+				response.url().includes('/data/driver-permissions') && response.status() === 200,
+			{ timeout: 60000 } // Increased to 60 seconds
+		);
+
 		// Now click the enabled button
 		await submitButton.click({ timeout: 5000 });
 
@@ -89,18 +105,13 @@ export async function checkDriverLicence(
 		// Return null to mark as invalid - worker continues
 		return null;
 	} finally {
-		// Close the context (not the browser) to free resources
-		if (context) {
-			try {
-				await context.close();
-			} catch (closeError) {
-				console.error('Error closing browser context:', closeError);
-			}
-		}
-
-		// Release browser back to pool
+		// Always close browser completely (no pooling - fresh browser each time)
 		if (browser) {
-			browserPool.releaseBrowser();
+			try {
+				await browser.close();
+			} catch (closeError) {
+				console.error('Error closing browser:', closeError);
+			}
 		}
 	}
 }
