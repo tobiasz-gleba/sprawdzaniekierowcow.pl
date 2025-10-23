@@ -1,10 +1,17 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import type { ActionData } from './$types';
+	import SEO from '$lib/components/SEO.svelte';
 
 	let { form }: { form: ActionData } = $props();
 	let isLoading = $state(false);
 </script>
+
+<SEO 
+	title="Wyślij ponownie email weryfikacyjny - Sprawdzanie Kierowców"
+	description="Nie otrzymałeś emaila weryfikacyjnego? Wyślemy Ci nowy link weryfikacyjny."
+	noindex={true}
+/>
 
 <div class="hero min-h-screen bg-gradient-to-br from-base-200 to-base-300">
 	<div class="hero-content max-w-2xl flex-col px-4">

@@ -8,6 +8,7 @@
 	import DriverList from '$lib/components/DriverList.svelte';
 	import DriverStats from '$lib/components/DriverStats.svelte';
 	import ImportDriversForm from '$lib/components/ImportDriversForm.svelte';
+	import SEO from '$lib/components/SEO.svelte';
 
 	let { data, form }: { data: PageServerData; form: ActionData } = $props();
 
@@ -63,9 +64,11 @@
 	});
 </script>
 
-<svelte:head>
-	<title>Dashboard - Sprawdzanie Kierowców</title>
-</svelte:head>
+<SEO 
+	title="Dashboard - Sprawdzanie Kierowców"
+	description="Panel zarządzania kierowcami - monitoruj uprawnienia, dodawaj kierowców i otrzymuj powiadomienia o zmianach statusu praw jazdy."
+	noindex={true}
+/>
 
 <div class="min-h-screen bg-base-200">
 	<div class="container mx-auto max-w-7xl p-4 md:p-8">

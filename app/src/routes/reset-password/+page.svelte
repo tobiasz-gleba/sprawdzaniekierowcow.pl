@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import type { PageData, ActionData } from './$types';
+	import SEO from '$lib/components/SEO.svelte';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 	let isLoading = $state(false);
@@ -10,6 +11,12 @@
 	let passwordsMatch = $derived(password === confirmPassword && password.length > 0);
 	let passwordValid = $derived(password.length >= 6);
 </script>
+
+<SEO 
+	title="Resetuj hasło - Sprawdzanie Kierowców"
+	description="Ustaw nowe hasło dla swojego konta w systemie sprawdzania kierowców."
+	noindex={true}
+/>
 
 <div class="hero min-h-screen bg-gradient-to-br from-base-200 to-base-300">
 	<div class="hero-content max-w-2xl flex-col px-4">

@@ -1,14 +1,13 @@
 <script lang="ts">
 	import { page } from '$app/stores';
+	import SEO from '$lib/components/SEO.svelte';
 </script>
 
-<svelte:head>
-	<title>Warunki Użytkowania - sprawdzaniekierowcow.pl</title>
-	<meta
-		name="description"
-		content="Warunki Użytkowania dla sprawdzaniekierowcow.pl - System Weryfikacji Praw Jazdy"
-	/>
-</svelte:head>
+<SEO 
+	title="Warunki Użytkowania - Sprawdzanie Kierowców"
+	description="Warunki Użytkowania dla sprawdzaniekierowcow.pl - regulamin korzystania z systemu weryfikacji praw jazdy kierowców."
+	keywords="regulamin, warunki użytkowania, terms of service"
+/>
 
 <div class="min-h-screen bg-base-200">
 	<div class="container mx-auto max-w-4xl p-4 py-8 md:p-8">

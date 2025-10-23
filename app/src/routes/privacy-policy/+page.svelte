@@ -1,14 +1,13 @@
 <script lang="ts">
 	import { page } from '$app/stores';
+	import SEO from '$lib/components/SEO.svelte';
 </script>
 
-<svelte:head>
-	<title>Polityka Prywatności - sprawdzaniekierowcow.pl</title>
-	<meta
-		name="description"
-		content="Polityka Prywatności dla sprawdzaniekierowcow.pl - System Weryfikacji Praw Jazdy"
-	/>
-</svelte:head>
+<SEO 
+	title="Polityka Prywatności - Sprawdzanie Kierowców"
+	description="Polityka Prywatności dla sprawdzaniekierowcow.pl - jak zbieramy, przechowujemy i chronimy Twoje dane osobowe w systemie weryfikacji praw jazdy."
+	keywords="polityka prywatności, RODO, ochrona danych, prywatność, bezpieczeństwo danych"
+/>
 
 <div class="min-h-screen bg-base-200">
 	<div class="container mx-auto max-w-4xl p-4 py-8 md:p-8">

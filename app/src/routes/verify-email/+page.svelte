@@ -1,8 +1,15 @@
 <script lang="ts">
 	import type { PageData } from './$types';
+	import SEO from '$lib/components/SEO.svelte';
 
 	let { data }: { data: PageData } = $props();
 </script>
+
+<SEO 
+	title="Weryfikacja emaila - Sprawdzanie Kierowców"
+	description="Weryfikacja adresu email w systemie sprawdzania kierowców."
+	noindex={true}
+/>
 
 <div class="hero min-h-screen bg-gradient-to-br from-base-200 to-base-300">
 	<div class="hero-content max-w-2xl flex-col px-4">

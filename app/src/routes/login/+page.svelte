@@ -3,6 +3,7 @@
 	import { page } from '$app/stores';
 	import { invalidateAll } from '$app/navigation';
 	import type { ActionData } from './$types';
+	import SEO from '$lib/components/SEO.svelte';
 
 	let { form }: { form: ActionData } = $props();
 
@@ -10,6 +11,12 @@
 	let isLoading = $state(false);
 	let activeAction: 'login' | 'register' = $state('login');
 </script>
+
+<SEO 
+	title="Logowanie - Sprawdzanie Kierowców"
+	description="Zaloguj się lub utwórz konto w systemie sprawdzania kierowców. Otrzymuj powiadomienia o zmianach statusu uprawnień kierowców."
+	noindex={true}
+/>
 
 <div class="hero min-h-screen bg-gradient-to-br from-base-200 to-base-300">
 	<div class="hero-content w-full max-w-6xl flex-col gap-8 px-4 lg:flex-row-reverse">
