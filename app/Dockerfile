@@ -72,7 +72,9 @@ COPY --from=builder /app/drizzle ./drizzle
 
 # Copy drizzle config and schema for migrations
 COPY --from=builder /app/drizzle.config.ts ./drizzle.config.ts
-COPY --from=builder /app/src/lib/server/db ./src/lib/server/db
+
+# Copy server library files for scripts and migrations
+COPY --from=builder /app/src/lib/server ./src/lib/server
 
 # Copy scripts directory for cron jobs
 COPY --from=builder /app/scripts ./scripts
