@@ -10,16 +10,25 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 		return resolve(event);
 	}
 
-	const { session, user } = await auth.validateSessionToken(sessionToken);
+	try {
+		const { session, user } = await auth.validateSessionToken(sessionToken);
 
-	if (session) {
-		auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
-	} else {
+		if (session) {
+			auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
+		} else {
+			auth.deleteSessionTokenCookie(event);
+		}
+
+		event.locals.user = user;
+		event.locals.session = session;
+	} catch (error) {
+		// If session validation fails (e.g., database error), treat as logged out
+		console.error('Session validation error:', error);
+		event.locals.user = null;
+		event.locals.session = null;
 		auth.deleteSessionTokenCookie(event);
 	}
 
-	event.locals.user = user;
-	event.locals.session = session;
 	return resolve(event);
 };
 

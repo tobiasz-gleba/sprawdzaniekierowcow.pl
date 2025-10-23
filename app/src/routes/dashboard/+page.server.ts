@@ -17,15 +17,21 @@ export const load: PageServerLoad = async (event) => {
 		'Cache-Control': 'private, no-cache, no-store, must-revalidate'
 	});
 
-	// Fetch all drivers for the current user
-	// Sort by status ascending (0/false first, then 1/true) and then by creation date descending
-	const drivers = await db
-		.select()
-		.from(table.driver)
-		.where(eq(table.driver.userId, event.locals.user.id))
-		.orderBy(asc(table.driver.status), desc(table.driver.createdAt));
+	try {
+		// Fetch all drivers for the current user
+		// Sort by status ascending (0/false first, then 1/true) and then by creation date descending
+		const drivers = await db
+			.select()
+			.from(table.driver)
+			.where(eq(table.driver.userId, event.locals.user.id))
+			.orderBy(asc(table.driver.status), desc(table.driver.createdAt));
 
-	return { user: event.locals.user, drivers };
+		return { user: event.locals.user, drivers };
+	} catch (error) {
+		console.error('Error loading dashboard data:', error);
+		// Return empty drivers array on database error
+		return { user: event.locals.user, drivers: [] };
+	}
 };
 
 export const actions: Actions = {
