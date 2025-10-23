@@ -196,6 +196,8 @@ export const actions: Actions = {
 					continue;
 				}
 
+				// Support both 3-column format (old) and 4-column format (with Status) from export
+				// Format: Imię, Nazwisko, Numer Seryjny Dokumentu, [Status - optional, will be ignored]
 				const [name, surname, documentSerialNumber] = values;
 
 				if (!name || !surname || !documentSerialNumber) {
