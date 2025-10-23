@@ -48,12 +48,14 @@ RUN apt-get update && \
 RUN groupadd -g 1001 nodejs && \
     useradd -r -u 1001 -g nodejs nodejs
 
-# Copy package.json first for dependency installation
+# Copy built application and node_modules from builder
+COPY --from=builder /app/build ./build
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/drizzle ./drizzle
 COPY --from=builder /app/package.json ./package.json
 
-# Install production dependencies and drizzle-kit for migrations
-RUN npm install --production && \
-    npm install drizzle-kit tsx --save-prod
+# Install additional production tools (drizzle-kit, tsx) without overwriting existing node_modules
+RUN npm install drizzle-kit tsx --save-prod
 
 # Create directory for Playwright browsers and set ownership
 RUN mkdir -p /ms-playwright && \
@@ -63,12 +65,8 @@ RUN mkdir -p /ms-playwright && \
 ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 
 # Install Playwright browsers with system dependencies as root
+# This installs browsers for the already-installed playwright package
 RUN npx playwright install --with-deps chromium
-
-# Copy built application from builder
-COPY --from=builder /app/build ./build
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/drizzle ./drizzle
 
 # Copy drizzle config and schema for migrations
 COPY --from=builder /app/drizzle.config.ts ./drizzle.config.ts
