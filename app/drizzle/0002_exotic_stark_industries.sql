@@ -1,0 +1,1 @@
+ALTER TABLE `driver` ADD `processing` boolean DEFAULT false NOT NULL;
