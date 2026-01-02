@@ -88,6 +88,9 @@ spec:
   volumeClaimTemplates:
   - metadata:
       name: mysql-storage
+    annotations:
+      recurring-job.longhorn.io/source: "enabled"
+      recurring-job.longhorn.io/backup-storage: "enabled"
     spec:
       accessModes: ["ReadWriteOnce"]
       resources:

@@ -19,6 +19,8 @@ spec:
     metadata:
       labels:
         app: sprawdzaniekierowcow
+      annotations:
+        instrumentation.opentelemetry.io/inject-nodejs: "monitoring-system/instrumentation"
     spec:
       initContainers:
       - name: migrations
