@@ -16,6 +16,9 @@ spec:
       template:
         spec:
           restartPolicy: OnFailure
+          securityContext:
+            runAsNonRoot: false
+            runAsUser: 0
           containers:
             - name: mysql-backup
               image: mysql:8
@@ -27,29 +30,30 @@ spec:
                 - |
                   set -euo pipefail
 
-                  apt-get update
-                  apt-get install -y lftp gzip
-
                   TS=$(date +%Y%m%d_%H%M%S)
                   FILE="/tmp/${MYSQL_DATABASE}_${TS}.sql.gz"
 
                   mysqldump \
+                    --no-tablespaces \
                     -h "$MYSQL_HOST" \
                     -P "$MYSQL_PORT" \
                     -u "$MYSQL_USER" \
+                    -p"$MYSQL_PASSWORD" \
                     --single-transaction \
                     --routines \
                     --events \
                     "$MYSQL_DATABASE" \
                   | gzip > "$FILE"
 
-                  lftp -inv "$FTP_HOST" <<EOF
-                  user $FTP_USER $FTP_PASS
-                  mkdir $FTP_DIR || true
-                  cd $FTP_DIR
-                  put $FILE
-                  bye
-                  EOF
+                  BASENAME=$(basename "$FILE")
+
+                  curl -v\
+                    --ftp-pasv \
+                    --disable-epsv \
+                    -T "$FILE" \
+                    --user "$FTP_USER:$FTP_PASS" \
+                    "ftp://$FTP_HOST/$FTP_DIR/$BASENAME"
+
 
                   echo "MySQL backup finished"
 
