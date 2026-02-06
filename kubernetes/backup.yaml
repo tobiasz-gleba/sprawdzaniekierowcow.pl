@@ -1,0 +1,94 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: sprawdzaniekierowcow-mysql-backup
+  namespace: sprawdzaniekierowcow
+spec:
+  #04:15 daily
+  schedule: "15 4 * * *"
+  timeZone: "Europe/Warsaw"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 10
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: mysql-backup
+              image: mysql:8
+              imagePullPolicy: IfNotPresent
+
+              command:
+                - /bin/bash
+                - -c
+                - |
+                  set -euo pipefail
+
+                  apt-get update
+                  apt-get install -y lftp gzip
+
+                  TS=$(date +%Y%m%d_%H%M%S)
+                  FILE="/tmp/${MYSQL_DATABASE}_${TS}.sql.gz"
+
+                  mysqldump \
+                    -h "$MYSQL_HOST" \
+                    -P "$MYSQL_PORT" \
+                    -u "$MYSQL_USER" \
+                    --single-transaction \
+                    --routines \
+                    --events \
+                    "$MYSQL_DATABASE" \
+                  | gzip > "$FILE"
+
+                  lftp -inv "$FTP_HOST" <<EOF
+                  user $FTP_USER $FTP_PASS
+                  mkdir $FTP_DIR || true
+                  cd $FTP_DIR
+                  put $FILE
+                  bye
+                  EOF
+
+                  echo "MySQL backup finished"
+
+              env:
+                - name: MYSQL_HOST
+                  value: "mysql.sprawdzaniekierowcow.svc.cluster.local"
+                - name: MYSQL_PORT
+                  value: "3306"
+                - name: MYSQL_DATABASE
+                  value: "sprawdzaniekierowcow"
+                - name: MYSQL_USER
+                  value: "sprawdzaniekierowcow"
+                - name: MYSQL_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: github-settings
+                      key: SHARED_DB_PASSWORD
+
+                - name: FTP_HOST
+                  value: "tunarybki.pl"
+                - name: FTP_DIR
+                  value: "sprawdzaniekierowcow_mysql_backups"
+                - name: FTP_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: github-settings
+                      key: FTP_USER
+                - name: FTP_PASS
+                  valueFrom:
+                    secretKeyRef:
+                      name: github-settings
+                      key: FTP_PASSWORD
+                - name: TZ
+                  value: "Europe/Warsaw"
+
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi

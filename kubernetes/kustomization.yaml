@@ -6,3 +6,4 @@ resources:
   - mysql.yaml
   - cron.yaml
   - worker-deployment.yaml
+  - backup.yaml
