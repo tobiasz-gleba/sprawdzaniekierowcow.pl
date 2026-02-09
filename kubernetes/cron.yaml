@@ -21,7 +21,7 @@ spec:
           restartPolicy: OnFailure
           containers:
           - name: mark-all
-            image: ghcr.io/tobiasz-gleba/sprawdzaniekierowcow.pl:20251027104438 # {"$imagepolicy": "sprawdzaniekierowcow:sprawdzaniekierowcow"}
+            image: ghcr.io/tobiasz-gleba/sprawdzaniekierowcow.pl:20260209094550 # {"$imagepolicy": "sprawdzaniekierowcow:sprawdzaniekierowcow"}
             command: ["npm", "run", "mark:all"]
             workingDir: /app
             env:
@@ -68,7 +68,7 @@ spec:
           restartPolicy: OnFailure
           containers:
           - name: notify-invalid
-            image: ghcr.io/tobiasz-gleba/sprawdzaniekierowcow.pl:20251027104438 # {"$imagepolicy": "sprawdzaniekierowcow:sprawdzaniekierowcow"}
+            image: ghcr.io/tobiasz-gleba/sprawdzaniekierowcow.pl:20260209094550 # {"$imagepolicy": "sprawdzaniekierowcow:sprawdzaniekierowcow"}
             command: ["npm", "run", "notify:invalid"]
             workingDir: /app
             env:
@@ -129,7 +129,7 @@ spec:
           restartPolicy: OnFailure
           containers:
           - name: cleanup-old-records
-            image: ghcr.io/tobiasz-gleba/sprawdzaniekierowcow.pl:20251027104438 # {"$imagepolicy": "sprawdzaniekierowcow:sprawdzaniekierowcow"}
+            image: ghcr.io/tobiasz-gleba/sprawdzaniekierowcow.pl:20260209094550 # {"$imagepolicy": "sprawdzaniekierowcow:sprawdzaniekierowcow"}
             command: ["npm", "run", "cleanup:old-records"]
             workingDir: /app
             env:
@@ -152,4 +152,3 @@ spec:
               requests:
                 memory: "64Mi"
                 cpu: "50m"
----
