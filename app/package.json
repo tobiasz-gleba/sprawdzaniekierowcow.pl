@@ -21,7 +21,8 @@
 		"validate:pending": "tsx scripts/validate-all-drivers.ts --status 2",
 		"notify:invalid": "tsx scripts/notify-invalid-drivers.ts",
 		"mark:all": "tsx scripts/mark-for-validation.ts",
-		"worker:validate": "tsx scripts/validation-worker.ts"
+		"worker:validate": "tsx scripts/validation-worker.ts",
+		"cleanup:old-records": "tsx scripts/clear-old-records.ts"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.4.0",
@@ -59,6 +60,6 @@
 		"mysql2": "^3.15.0",
 		"nodemailer": "^7.0.9",
 		"playwright": "^1.56.1",
-		"tsx": "^4.20.6"
+		"tsx": "^4.21.0"
 	}
 }
