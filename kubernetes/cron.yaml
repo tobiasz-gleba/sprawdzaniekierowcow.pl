@@ -105,3 +105,51 @@ spec:
               requests:
                 memory: "256Mi"
                 cpu: "100m"
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cleanup-old-records
+  namespace: sprawdzaniekierowcow
+  labels:
+    app: sprawdzaniekierowcow
+spec:
+  schedule: "0 4 * * *" # Run at midnight every day
+  concurrencyPolicy: Forbid # Prevent overlapping runs
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        metadata:
+          labels:
+            app: sprawdzaniekierowcow-cron
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: cleanup-old-records
+            image: ghcr.io/tobiasz-gleba/sprawdzaniekierowcow.pl:20251027104438 # {"$imagepolicy": "sprawdzaniekierowcow:sprawdzaniekierowcow"}
+            command: ["npm", "run", "cleanup:old-records"]
+            workingDir: /app
+            env:
+            - name: DB_HOST
+              value: mysql.sprawdzaniekierowcow.svc.cluster.local
+            - name: DB_USERNAME
+              value: sprawdzaniekierowcow
+            - name: DB_NAME
+              value: sprawdzaniekierowcow
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: github-settings
+                  key: SHARED_DB_PASSWORD
+                  optional: false
+            resources:
+              limits:
+                memory: "256Mi"
+                cpu: "250m"
+              requests:
+                memory: "64Mi"
+                cpu: "50m"
+---
