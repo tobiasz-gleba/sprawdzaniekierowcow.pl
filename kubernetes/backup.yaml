@@ -1,0 +1,64 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: sprawdzaniekierowcow-mysql-backup
+  namespace: sprawdzaniekierowcow
+spec:
+  #04:15 daily
+  schedule: "15 4 * * *"
+  timeZone: "Europe/Warsaw"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 10
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        spec:
+          restartPolicy: OnFailure
+          securityContext:
+            runAsNonRoot: false
+            runAsUser: 0
+          containers:
+            - name: mysql-backup
+              image: harbor.rent2door.pl/sprawdzaniekierowcow/sprawdzaniekierowcow-backup:latest
+              imagePullPolicy: IfNotPresent
+              env:
+                - name: MYSQL_HOST
+                  value: "mysql.sprawdzaniekierowcow.svc.cluster.local"
+                - name: MYSQL_PORT
+                  value: "3306"
+                - name: MYSQL_DATABASE
+                  value: "sprawdzaniekierowcow"
+                - name: MYSQL_USER
+                  value: "sprawdzaniekierowcow"
+                - name: MYSQL_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: github-settings
+                      key: SHARED_DB_PASSWORD
+
+                - name: FTP_HOST
+                  value: "tunarybki.pl"
+                - name: FTP_PATH
+                  value: "sprawdzaniekierowcow_mysql_backups"
+                - name: FTP_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: github-settings
+                      key: FTP_USER
+                - name: FTP_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: github-settings
+                      key: FTP_PASSWORD
+                - name: TZ
+                  value: "Europe/Warsaw"
+
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
