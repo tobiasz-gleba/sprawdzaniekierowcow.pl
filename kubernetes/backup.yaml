@@ -19,6 +19,8 @@ spec:
           securityContext:
             runAsNonRoot: false
             runAsUser: 0
+          imagePullSecrets:
+            - name: harbor-registry
           containers:
             - name: mysql-backup
               image: harbor.rent2door.pl/sprawdzaniekierowcow/sprawdzaniekierowcow-backup:latest
