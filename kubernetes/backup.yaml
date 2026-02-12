@@ -45,10 +45,11 @@ spec:
                 - name: FTP_PATH
                   value: "sprawdzaniekierowcow_mysql_backups"
                 - name: FTP_USER
-                  valueFrom:
-                    secretKeyRef:
-                      name: github-settings
-                      key: FTP_USER
+                  value: "tunarybki_home-lab-backup"
+                  #valueFrom:
+                    #secretKeyRef:
+                      #name: github-settings
+                      #key: FTP_USER
                 - name: FTP_PASSWORD
                   valueFrom:
                     secretKeyRef:
