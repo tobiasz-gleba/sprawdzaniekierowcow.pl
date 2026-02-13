@@ -41,20 +41,19 @@ spec:
                       key: SHARED_DB_PASSWORD
 
                 - name: FTP_HOST
-                  value: "tunarybki.pl"
+                  value: "leda.iq.pl"
                 - name: FTP_PATH
                   value: "sprawdzaniekierowcow_mysql_backups"
                 - name: FTP_USER
-                  value: "tunarybki_home-lab-backup"
-                  #valueFrom:
-                    #secretKeyRef:
-                      #name: github-settings
-                      #key: FTP_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: github-settings
+                      key: FTP_USER_TUNARYBKI
                 - name: FTP_PASSWORD
                   valueFrom:
                     secretKeyRef:
                       name: github-settings
-                      key: FTP_PASSWORD
+                      key: FTP_PASSWORD_TUNARYBKI
                 - name: TZ
                   value: "Europe/Warsaw"
 
