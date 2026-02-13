@@ -24,7 +24,7 @@ spec:
     spec:
       initContainers:
       - name: migrations
-        image: ghcr.io/tobiasz-gleba/sprawdzaniekierowcow.pl:20260209094725 # {"$imagepolicy": "sprawdzaniekierowcow:sprawdzaniekierowcow"}
+        image: ghcr.io/tobiasz-gleba/sprawdzaniekierowcow.pl/app:000 # {"$imagepolicy": "sprawdzaniekierowcow:app"}
         command: ["npm", "run", "db:migrate"]
         workingDir: /app
         env:
