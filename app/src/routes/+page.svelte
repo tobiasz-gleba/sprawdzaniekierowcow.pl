@@ -1,17 +1,65 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import type { PageServerData } from './$types';
 	import AboutApp from '$lib/components/AboutApp.svelte';
 	import SEO from '$lib/components/SEO.svelte';
 
 	let { data }: { data: PageServerData } = $props();
 
-	// If user is logged in, redirect to dashboard
-	onMount(() => {
-		if (data.user) {
-			goto('/dashboard', { replaceState: true });
+	const INTEROFFICE_URL = 'https://interoffice.sprawdzaniekierowcow.pl';
+	const INTEROFFICE_CHECK_TIMEOUT_MS = 2500;
+
+	async function hasOkInterofficeResponse(method: 'HEAD' | 'GET', signal: AbortSignal) {
+		try {
+			const response = await fetch(INTEROFFICE_URL, {
+				method,
+				cache: 'no-store',
+				credentials: 'omit',
+				mode: 'cors',
+				signal
+			});
+
+			return response.status === 200;
+		} catch {
+			return false;
 		}
+	}
+
+	onMount(() => {
+		const controller = new AbortController();
+		const timeoutId = window.setTimeout(() => controller.abort(), INTEROFFICE_CHECK_TIMEOUT_MS);
+		let mounted = true;
+
+		async function redirectIfNeeded() {
+			const isInterofficeReachable =
+				(await hasOkInterofficeResponse('HEAD', controller.signal)) ||
+				(await hasOkInterofficeResponse('GET', controller.signal));
+
+			window.clearTimeout(timeoutId);
+
+			if (!mounted) {
+				return;
+			}
+
+			if (isInterofficeReachable) {
+				window.location.replace(INTEROFFICE_URL);
+				return;
+			}
+
+			if (data.user) {
+				await goto(resolve('/dashboard'), { replaceState: true });
+			}
+		}
+
+		void redirectIfNeeded();
+
+		return () => {
+			mounted = false;
+			window.clearTimeout(timeoutId);
+			controller.abort();
+		};
 	});
 </script>
 
