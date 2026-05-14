@@ -24,6 +24,7 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
     permissions:
+      contents: read
       packages: write
     strategy:
       matrix:
@@ -67,3 +68,23 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           platforms: linux/amd64,linux/arm64
+
+      - name: Build Docker image artifact
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ matrix.service }}
+          file: ${{ matrix.service }}/Dockerfile
+          push: false
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          outputs: type=oci,dest=/tmp/${{ matrix.service }}-image.tar
+          platforms: linux/amd64,linux/arm64
+
+      - name: Upload Docker image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.service }}-docker-image-${{ env.TIMESTAMP }}
+          path: /tmp/${{ matrix.service }}-image.tar
+          if-no-files-found: error
+          retention-days: 7
